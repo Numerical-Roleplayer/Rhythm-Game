@@ -171,12 +171,16 @@
         const now = performance.now();
         const elapsed = now - spawnTime;
         const progress = Math.min(elapsed / travelDuration, 1);
-        const y = progress * (hitY + 30);
+        const y = progress * (hitY + 40);
         note.style.top = `${y - 40}px`;
+
+        if (note.dataset.handled === 'true' || !note.isConnected) {
+          return;
+        }
 
         if (progress < 1) {
           requestAnimationFrame(animate);
-        } else if (note.dataset.handled === 'false') {
+        } else {
           note.remove();
           totalNotes++;
           updateScore();
