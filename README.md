@@ -1,1 +1,46 @@
-Ballet-themed rhythm game prototype code. 
+# Rhythm Game
+
+A ballet-themed rhythm game prototype built with HTML, CSS, and vanilla JavaScript.
+
+## Launching the Game
+
+Open `index.html` in any modern web browser. Double-clicking the file or serving it with a simple HTTP server will start the game.
+
+## Controls
+
+Notes fall through four lanes that correspond to the following keys:
+
+- **D** – left lane
+- **F** – left‑center lane
+- **J** – right‑center lane
+- **K** – right lane
+
+## Current Features
+
+- Four-lane note highway with smooth falling note animation.
+- Real-time scoring that displays overall hit rate.
+- Visual feedback for hits and misses, including lane flashes and timing messages (e.g., "Poised!", "Balanced!", "Wavering!", "Lapse!").
+- Responsive design that fills the browser window.
+
+## Development Guidelines
+
+- Use clear, descriptive variable and function names.
+- Keep functions small and focused; comment any non-obvious logic.
+- Test changes in a browser before committing.
+- Write descriptive commit messages that explain the intent of the change.
+
+## Roadmap
+
+Planned enhancements include:
+
+- Integrating music tracks with synchronized note charts.
+- Adding difficulty levels and custom song support.
+- Expanding visual effects and animations.
+- Introducing a main menu and pause functionality.
+- Improving mobile/touch support.
+
+## Licensing & Attribution
+
+This project is released under the [MIT License](LICENSE).
+
+The game currently uses no external assets or libraries. If you add third-party assets or libraries, list them here with their respective licenses and attribution requirements.
