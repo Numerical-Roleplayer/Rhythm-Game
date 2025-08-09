@@ -15,6 +15,29 @@
       position: relative;
       width: 100vw;
       height: 100vh;
+      display: none;
+    }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(248, 232, 241, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .overlay button {
+      padding: 10px 20px;
+      font-size: 24px;
+      border: none;
+      border-radius: 8px;
+      background-color: #5a189a;
+      color: #fff;
+      cursor: pointer;
     }
     .lane-container {
       position: absolute;
@@ -103,6 +126,10 @@
   </style>
 </head>
 <body>
+  <div id="start-screen" class="overlay">
+    <button id="start-button">Start</button>
+  </div>
+
   <div id="game">
     <div id="score">Hit Rate: 100%</div>
     <div class="lane-container" id="lane-container"></div>
@@ -110,14 +137,27 @@
     <div class="hit-line"></div>
   </div>
 
+  <div id="game-over" class="overlay" style="display: none;">
+    <div id="final-score"></div>
+    <button id="restart-button">Restart</button>
+  </div>
+
   <script>
     const game = document.getElementById('game');
     const scoreDisplay = document.getElementById('score');
     const laneContainer = document.getElementById('lane-container');
     const feedback = document.getElementById('feedback');
+    const startScreen = document.getElementById('start-screen');
+    const startButton = document.getElementById('start-button');
+    const gameOverScreen = document.getElementById('game-over');
+    const restartButton = document.getElementById('restart-button');
+    const finalScore = document.getElementById('final-score');
     const lanes = ['d', 'f', 'j', 'k'];
     let totalNotes = 0;
     let hitNotes = 0;
+    let noteInterval = null;
+    let gameTimeout = null;
+    const songDuration = 30000; // duration placeholder in ms
 
     const travelDuration = 1300;
     const hitY = window.innerHeight - 100;
@@ -192,12 +232,7 @@
       requestAnimationFrame(animate);
     }
 
-    setInterval(() => {
-      const lane = Math.floor(Math.random() * 4);
-      spawnNote(lane);
-    }, 800);
-
-    window.addEventListener('keydown', (e) => {
+    function handleKeyDown(e) {
       const key = e.key.toLowerCase();
       if (!lanes.includes(key)) return;
 
@@ -231,7 +266,39 @@
           break;
         }
       }
-    });
+    }
+
+    function startGame() {
+      stopGame();
+      totalNotes = 0;
+      hitNotes = 0;
+      updateScore();
+      startScreen.style.display = 'none';
+      gameOverScreen.style.display = 'none';
+      game.style.display = 'block';
+      window.addEventListener('keydown', handleKeyDown);
+      noteInterval = setInterval(() => {
+        const lane = Math.floor(Math.random() * 4);
+        spawnNote(lane);
+      }, 800);
+      gameTimeout = setTimeout(endGame, songDuration);
+    }
+
+    function stopGame() {
+      clearInterval(noteInterval);
+      clearTimeout(gameTimeout);
+      window.removeEventListener('keydown', handleKeyDown);
+      noteInterval = null;
+      gameTimeout = null;
+      document.querySelectorAll('.note').forEach(n => n.remove());
+    }
+
+    function endGame() {
+      stopGame();
+      finalScore.textContent = scoreDisplay.textContent;
+      game.style.display = 'none';
+      gameOverScreen.style.display = 'flex';
+    }
 
     function updateScore() {
       const percent = totalNotes > 0 ? Math.floor((hitNotes / totalNotes) * 100) : 100;
@@ -247,6 +314,9 @@
         feedback.style.opacity = '0';
       }, 600);
     }
+
+    startButton.addEventListener('click', startGame);
+    restartButton.addEventListener('click', startGame);
   </script>
 </body>
 </html>
