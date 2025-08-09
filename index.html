@@ -139,6 +139,15 @@
 
   <div id="game-over" class="overlay" style="display: none;">
     <div id="final-score"></div>
+    <div id="stats" style="text-align: center; margin: 20px 0;">
+      <p>Total Notes: <span id="stat-total">0</span></p>
+      <p>Hit Notes: <span id="stat-hit">0</span></p>
+      <p>Poised: <span id="stat-poised">0</span></p>
+      <p>Balanced: <span id="stat-balanced">0</span></p>
+      <p>Wavering: <span id="stat-wavering">0</span></p>
+      <p>Lapse: <span id="stat-lapse">0</span></p>
+      <p>Average Delay: <span id="stat-delay">0</span> ms</p>
+    </div>
     <button id="restart-button">Restart</button>
   </div>
 
@@ -155,6 +164,11 @@
     const lanes = ['d', 'f', 'j', 'k'];
     let totalNotes = 0;
     let hitNotes = 0;
+    let poisedCount = 0;
+    let balancedCount = 0;
+    let waveringCount = 0;
+    let lapseCount = 0;
+    let totalDelay = 0;
     let noteInterval = null;
     let gameTimeout = null;
     const songDuration = 30000; // duration placeholder in ms
@@ -223,6 +237,7 @@
         } else {
           note.remove();
           totalNotes++;
+          lapseCount++;
           updateScore();
           showFeedback('Lapse!');
           console.log(`Note missed. Total notes: ${totalNotes}`);
@@ -258,6 +273,14 @@
         if (result !== 'Lapse!') {
           hitNotes++;
           totalNotes++;
+          totalDelay += timingError;
+          if (result === 'Poised!') {
+            poisedCount++;
+          } else if (result === 'Balanced!') {
+            balancedCount++;
+          } else if (result === 'Wavering!') {
+            waveringCount++;
+          }
           note.dataset.handled = 'true';
           note.remove();
           updateScore();
@@ -272,6 +295,11 @@
       stopGame();
       totalNotes = 0;
       hitNotes = 0;
+      poisedCount = 0;
+      balancedCount = 0;
+      waveringCount = 0;
+      lapseCount = 0;
+      totalDelay = 0;
       updateScore();
       startScreen.style.display = 'none';
       gameOverScreen.style.display = 'none';
@@ -296,6 +324,14 @@
     function endGame() {
       stopGame();
       finalScore.textContent = scoreDisplay.textContent;
+      const avgDelay = hitNotes > 0 ? (totalDelay / hitNotes).toFixed(2) : 0;
+      document.getElementById('stat-total').textContent = totalNotes;
+      document.getElementById('stat-hit').textContent = hitNotes;
+      document.getElementById('stat-poised').textContent = poisedCount;
+      document.getElementById('stat-balanced').textContent = balancedCount;
+      document.getElementById('stat-wavering').textContent = waveringCount;
+      document.getElementById('stat-lapse').textContent = lapseCount;
+      document.getElementById('stat-delay').textContent = avgDelay;
       game.style.display = 'none';
       gameOverScreen.style.display = 'flex';
     }
