@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ballet Rhythm Game</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(to bottom, #f8e8f1, #e2d0e8);
+      font-family: 'Georgia', serif;
+      overflow: hidden;
+    }
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+    .lane-container {
+      position: absolute;
+      width: 400px;
+      height: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+    }
+    .lane {
+      flex: 1;
+      height: 100%;
+      border-left: 1px solid #bbbbd4;
+      border-right: 1px solid #bbbbd4;
+      position: relative;
+    }
+    .note {
+      position: absolute;
+      height: 20px;
+      width: 100px;
+      border-radius: 10px;
+      opacity: 0.95;
+      border: 2px solid #4c1d95;
+    }
+    .note.d { background-color: #f6a6b2; }
+    .note.f { background-color: #b392f0; }
+    .note.j { background-color: #f9cd77; }
+    .note.k { background-color: #80b3d1; }
+
+    .hit-line {
+      position: absolute;
+      bottom: 100px;
+      height: 4px;
+      width: 400px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #8b5cf6;
+      opacity: 0.6;
+    }
+    .hit-indicator {
+      position: absolute;
+      bottom: 96px;
+      height: 20px;
+      width: 100px;
+      border: 2px dashed #a78bfa;
+      border-radius: 10px;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+    .hit-flash {
+      position: absolute;
+      bottom: 90px;
+      width: 100px;
+      height: 30px;
+      background-color: #ffd700;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      box-shadow: 0 0 25px 10px #ffd70088;
+    }
+    .hit-flash.active {
+      opacity: 0.7;
+      transform: scale(1.8);
+    }
+
+    #score {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 24px;
+      color: #5a189a;
+    }
+    .feedback-text {
+      position: absolute;
+      font-size: 20px;
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      color: #5a189a;
+      left: calc(50% - 300px);
+      bottom: 180px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="score">Hit Rate: 100%</div>
+    <div class="lane-container" id="lane-container"></div>
+    <div class="feedback-text" id="feedback"></div>
+    <div class="hit-line"></div>
+  </div>
+
+  <script>
+    const game = document.getElementById('game');
+    const scoreDisplay = document.getElementById('score');
+    const laneContainer = document.getElementById('lane-container');
+    const feedback = document.getElementById('feedback');
+    const lanes = ['d', 'f', 'j', 'k'];
+    let totalNotes = 0;
+    let hitNotes = 0;
+
+    const travelDuration = 1300;
+    const hitY = window.innerHeight - 100;
+
+    console.log("Initializing game with travelDuration:", travelDuration);
+
+    lanes.forEach((key, i) => {
+      const lane = document.createElement('div');
+      lane.className = 'lane';
+      laneContainer.appendChild(lane);
+    });
+
+    lanes.forEach((key, i) => {
+      const indicator = document.createElement('div');
+      indicator.className = 'hit-indicator';
+      indicator.style.left = `${i * 100}px`;
+      indicator.style.bottom = '96px';
+      indicator.style.position = 'absolute';
+      laneContainer.appendChild(indicator);
+
+      const flash = document.createElement('div');
+      flash.className = 'hit-flash';
+      flash.style.left = `${i * 100}px`;
+      flash.style.position = 'absolute';
+      laneContainer.appendChild(flash);
+    });
+
+    function triggerFlash(laneIndex) {
+      const flash = document.querySelectorAll('.hit-flash')[laneIndex];
+      flash.classList.add('active');
+      setTimeout(() => {
+        flash.classList.remove('active');
+      }, 200);
+    }
+
+    function spawnNote(laneIndex) {
+      const note = document.createElement('div');
+      const laneKey = lanes[laneIndex];
+      note.className = `note ${laneKey}`;
+      note.dataset.lane = laneKey;
+      note.style.left = `${laneIndex * 100}px`;
+
+      const spawnTime = performance.now();
+      const expectedHitTime = spawnTime + travelDuration;
+      note.dataset.hitTime = expectedHitTime;
+      note.dataset.handled = 'false';
+
+      laneContainer.appendChild(note);
+
+      function animate() {
+        const now = performance.now();
+        const elapsed = now - spawnTime;
+        const progress = Math.min(elapsed / travelDuration, 1);
+        const y = progress * (hitY + 30);
+        note.style.top = `${y - 40}px`;
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else if (note.dataset.handled === 'false') {
+          note.remove();
+          totalNotes++;
+          updateScore();
+          showFeedback('Lapse!');
+          console.log(`Note missed. Total notes: ${totalNotes}`);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    setInterval(() => {
+      const lane = Math.floor(Math.random() * 4);
+      spawnNote(lane);
+    }, 800);
+
+    window.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+      if (!lanes.includes(key)) return;
+
+      const notes = Array.from(document.querySelectorAll('.note'));
+      const now = performance.now();
+
+      for (let note of notes) {
+        if (note.dataset.lane !== key) continue;
+
+        const expectedHitTime = Number(note.dataset.hitTime);
+        const diff = now - expectedHitTime;
+        const timingError = Math.abs(diff);
+
+        let result = 'Lapse!';
+        if (timingError <= 25) {
+          result = 'Poised!';
+        } else if ((diff > 25 && diff <= 50) || (diff < -25 && diff >= -50)) {
+          result = 'Balanced!';
+        } else if ((diff > 50 && diff <= 80) || (diff < -50 && diff >= -80)) {
+          result = 'Wavering!';
+        }
+
+        if (result !== 'Lapse!') {
+          hitNotes++;
+          totalNotes++;
+          note.dataset.handled = 'true';
+          note.remove();
+          updateScore();
+          showFeedback(result);
+          triggerFlash(lanes.indexOf(key));
+          break;
+        }
+      }
+    });
+
+    function updateScore() {
+      const percent = totalNotes > 0 ? Math.floor((hitNotes / totalNotes) * 100) : 100;
+      scoreDisplay.textContent = `Hit Rate: ${percent}%`;
+      console.log(`Total: ${totalNotes}, Hits: ${hitNotes}, Hit Rate: ${percent}%`);
+    }
+
+    function showFeedback(text) {
+      feedback.textContent = text;
+      feedback.style.opacity = '1';
+      clearTimeout(feedback.timeout);
+      feedback.timeout = setTimeout(() => {
+        feedback.style.opacity = '0';
+      }, 600);
+    }
+  </script>
+</body>
+</html>
