@@ -22,7 +22,9 @@ const songDuration = 30000; // duration placeholder in ms
 const travelDuration = 1300;
 const hitY = window.innerHeight - 100;
 
-console.log("Initializing game with travelDuration:", travelDuration);
+if (import.meta.env.DEV) {
+  console.log("Initializing game with travelDuration:", travelDuration);
+}
 
 lanes.forEach((key, i) => {
   const lane = document.createElement('div');
@@ -86,7 +88,9 @@ function spawnNote(laneIndex) {
       lapseCount++;
       updateScore();
       showFeedback('Lapse!');
-      console.log(`Note missed. Total notes: ${totalNotes}`);
+      if (import.meta.env.DEV) {
+        console.log(`Note missed. Total notes: ${totalNotes}`);
+      }
     }
   }
 
@@ -185,7 +189,9 @@ function endGame() {
 function updateScore() {
   const percent = totalNotes > 0 ? Math.floor((hitNotes / totalNotes) * 100) : 100;
   scoreDisplay.textContent = `Hit Rate: ${percent}%`;
-  console.log(`Total: ${totalNotes}, Hits: ${hitNotes}, Hit Rate: ${percent}%`);
+  if (import.meta.env.DEV) {
+    console.log(`Total: ${totalNotes}, Hits: ${hitNotes}, Hit Rate: ${percent}%`);
+  }
 }
 
 function showFeedback(text) {
