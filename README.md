@@ -4,7 +4,24 @@ A ballet-themed rhythm game prototype built with HTML, CSS, and vanilla JavaScri
 
 ## Launching the Game
 
-Open `index.html` in any modern web browser. Double-clicking the file or serving it with a simple HTTP server will start the game.
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+For a production build and preview:
+
+```bash
+npm run build
+npm run preview
+```
 
 ## Controls
 
