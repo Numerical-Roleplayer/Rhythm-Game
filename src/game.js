@@ -20,7 +20,26 @@ let gameTimeout = null;
 const songDuration = 30000; // duration placeholder in ms
 
 const travelDuration = 1300;
-const hitY = window.innerHeight - 100;
+let laneWidth = 0;
+let hitY = 0;
+
+function computeDimensions() {
+  laneWidth = laneContainer.clientWidth / lanes.length;
+  hitY = laneContainer.clientHeight - 20;
+
+  document.querySelectorAll('.hit-indicator').forEach((indicator, i) => {
+    indicator.style.left = `${i * laneWidth}px`;
+    indicator.style.width = `${laneWidth - 5}px`;
+  });
+
+  document.querySelectorAll('.hit-flash').forEach((flash, i) => {
+    flash.style.left = `${i * laneWidth}px`;
+    flash.style.width = `${laneWidth}px`;
+  });
+}
+
+computeDimensions();
+window.addEventListener('resize', computeDimensions);
 
 if (import.meta.env.DEV) {
   console.log("Initializing game with travelDuration:", travelDuration);
@@ -35,17 +54,20 @@ lanes.forEach((key, i) => {
 lanes.forEach((key, i) => {
   const indicator = document.createElement('div');
   indicator.className = 'hit-indicator';
-  indicator.style.left = `${i * 100}px`;
-  indicator.style.bottom = '96px';
+  indicator.style.left = `${i * laneWidth}px`;
+  indicator.style.width = `${laneWidth - 5}px`;
   indicator.style.position = 'absolute';
   laneContainer.appendChild(indicator);
 
   const flash = document.createElement('div');
   flash.className = 'hit-flash';
-  flash.style.left = `${i * 100}px`;
+  flash.style.left = `${i * laneWidth}px`;
+  flash.style.width = `${laneWidth}px`;
   flash.style.position = 'absolute';
   laneContainer.appendChild(flash);
 });
+
+computeDimensions();
 
 function triggerFlash(laneIndex) {
   const flash = document.querySelectorAll('.hit-flash')[laneIndex];
@@ -60,7 +82,8 @@ function spawnNote(laneIndex) {
   const laneKey = lanes[laneIndex];
   note.className = `note ${laneKey}`;
   note.dataset.lane = laneKey;
-  note.style.left = `${laneIndex * 100}px`;
+  note.style.left = `${laneIndex * laneWidth}px`;
+  note.style.width = `${laneWidth}px`;
 
   const spawnTime = performance.now();
   const expectedHitTime = spawnTime + travelDuration;
