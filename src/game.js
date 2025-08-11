@@ -38,7 +38,6 @@ function computeDimensions() {
   });
 }
 
-computeDimensions();
 window.addEventListener('resize', computeDimensions);
 
 if (import.meta.env.DEV) {
@@ -66,8 +65,6 @@ lanes.forEach((key, i) => {
   flash.style.position = 'absolute';
   laneContainer.appendChild(flash);
 });
-
-computeDimensions();
 
 function triggerFlash(laneIndex) {
   const flash = document.querySelectorAll('.hit-flash')[laneIndex];
@@ -177,6 +174,7 @@ function startGame() {
   startScreen.style.display = 'none';
   gameOverScreen.style.display = 'none';
   game.style.display = 'block';
+  requestAnimationFrame(computeDimensions);
   window.addEventListener('keydown', handleKeyDown);
   noteInterval = setInterval(() => {
     const lane = Math.floor(Math.random() * 4);
