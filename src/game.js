@@ -20,7 +20,7 @@ let gameTimeout = null;
 const songDuration = 30000; // duration placeholder in ms
 
 const travelDuration = 1300;
-const hitY = window.innerHeight - 100;
+const hitY = window.innerHeight / 2 - 96;
 
 if (import.meta.env.DEV) {
   console.log("Initializing game with travelDuration:", travelDuration);
