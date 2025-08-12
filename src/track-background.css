@@ -1,0 +1,43 @@
+.track {
+  background-color: #BFD7EA;
+}
+
+.lane {
+  border-left: 1.3px solid #D4AF37;
+  border-right: 1.3px solid #D4AF37;
+  opacity: 0.7;
+}
+
+.note {
+  opacity: 0.95;
+  border: 2px solid #F7A27E;
+}
+
+.note.d,
+.note.f,
+.note.j,
+.note.k {
+  background-color: #F6D1D1;
+}
+
+.hit-line {
+  border: 0.5px ridge #F7A27E;
+  background: #ffecb4;
+  opacity: 1;
+}
+
+.hit-indicator {
+  border: 2px solid #a4b18b;
+  opacity: 1;
+}
+
+.hit-flash {
+  background-color: #47D3C0;
+  opacity: 0;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  box-shadow: 0 0 25px 10px #74ddcf;
+}
+
+.hit-flash.active {
+  opacity: 0.7;
+}

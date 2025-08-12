@@ -7,7 +7,6 @@
 
 body {
   margin: 0;
-  background: #2E3A46;
   font-family: 'Georgia', serif;
   overflow: hidden;
 }
@@ -25,7 +24,6 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(248, 232, 241, 0.9);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -43,7 +41,6 @@ body {
 }
 .track {
   position: absolute;
-  background-color: #BFD7EA;
   width: var(--track-width);
   height: var(--track-height);
   top: var(--track-top);
@@ -63,9 +60,6 @@ body {
 .lane {
   flex: 1;
   height: 100%;
-  border-left: 1.3px solid #D4AF37;
-  border-right: 1.3px solid #D4AF37;
-  opacity: 0.7;
   position: relative;
 }
 .note {
@@ -75,23 +69,14 @@ body {
   left: 50%;
   transform: translateX(-50%);
   border-radius: 10px;
-  opacity: 0.95;
-  border: 2px solid #F7A27E;
 }
-.note.d { background-color: #F6D1D1; }
-.note.f { background-color: #F6D1D1; }
-.note.j { background-color: #F6D1D1; }
-.note.k { background-color: #F6D1D1; }
 
 .hit-line {
   position: absolute;
   bottom: -10px;
   height: 4px;
   width: 100%;
-  border: 0.5px ridge #F7A27E;
   border-radius: 10px;
-  background: #ffecb4;
-  opacity: 1;
 }
 .hit-indicator {
   position: absolute;
@@ -100,10 +85,8 @@ body {
   width: 96%;
   left: 50%;
   transform: translateX(-50%);
-  border: 2px solid #a4b18b;
   border-radius: 10px;
   pointer-events: none;
-  opacity: 1;
 }
 .hit-flash {
   position: absolute;
@@ -112,15 +95,10 @@ body {
   width: 100%;
   left: 50%;
   transform: translateX(-50%) scale(0.5);
-  background-color: #47D3C0;
   border-radius: 50%;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.4s ease, transform 0.4s ease;
-  box-shadow: 0 0 25px 10px #74ddcf;
 }
 .hit-flash.active {
-  opacity: 0.7;
   transform: translateX(-50%) scale(1.8);
 }
 
