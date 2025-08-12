@@ -1,8 +1,8 @@
 :root {
-  --track-top: 45vh;
-  --track-height: 50vh;
+  --track-top: 40vh;
+  --track-height: 55vh;
   --track-width: 420px;
-  --track-angle: 55deg;
+  --track-angle: 50deg;
 }
 
 body {
@@ -43,6 +43,7 @@ body {
 }
 .track {
   position: absolute;
+  background-color: #BFD7EA;
   width: var(--track-width);
   height: var(--track-height);
   top: var(--track-top);
@@ -62,14 +63,14 @@ body {
 .lane {
   flex: 1;
   height: 100%;
-  border-left: 1px solid #D4AF37;
-  border-right: 1px solid #D4AF37;
+  border-left: 1.3px solid #D4AF37;
+  border-right: 1.3px solid #D4AF37;
   position: relative;
 }
 .note {
   position: absolute;
   height: 20px;
-  width: 100px;
+  width: 95px;
   border-radius: 10px;
   opacity: 0.95;
   border: 2px solid #4c1d95;
@@ -81,21 +82,22 @@ body {
 
 .hit-line {
   position: absolute;
-  bottom: 0;
+  bottom: -10px;
   height: 4px;
   width: 100%;
   border: 0.5px ridge #F7A27E;
+  border-radius: 10px;
   background: #ffecb4;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 .hit-indicator {
   position: absolute;
   bottom: 0;
   height: 20px;
-  border: 3px groove #D8E4C0;
+  border: 3px solid #D8E4C0;
   border-radius: 10px;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 1;
 }
 .hit-flash {
   position: absolute;
