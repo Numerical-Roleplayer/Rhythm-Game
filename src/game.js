@@ -20,31 +20,30 @@ let gameTimeout = null;
 const songDuration = 30000; // duration placeholder in ms
 
 const travelDuration = 1300;
-const hitY = window.innerHeight - 100;
+let hitY = 0;
+
+function computeDimensions() {
+  hitY = laneContainer.clientHeight - 20;
+}
+
+window.addEventListener('resize', computeDimensions);
 
 if (import.meta.env.DEV) {
   console.log("Initializing game with travelDuration:", travelDuration);
 }
 
-lanes.forEach((key, i) => {
+lanes.forEach((key) => {
   const lane = document.createElement('div');
   lane.className = 'lane';
   laneContainer.appendChild(lane);
-});
 
-lanes.forEach((key, i) => {
   const indicator = document.createElement('div');
   indicator.className = 'hit-indicator';
-  indicator.style.left = `${i * 100}px`;
-  indicator.style.bottom = '96px';
-  indicator.style.position = 'absolute';
-  laneContainer.appendChild(indicator);
+  lane.appendChild(indicator);
 
   const flash = document.createElement('div');
   flash.className = 'hit-flash';
-  flash.style.left = `${i * 100}px`;
-  flash.style.position = 'absolute';
-  laneContainer.appendChild(flash);
+  lane.appendChild(flash);
 });
 
 function triggerFlash(laneIndex) {
@@ -60,14 +59,13 @@ function spawnNote(laneIndex) {
   const laneKey = lanes[laneIndex];
   note.className = `note ${laneKey}`;
   note.dataset.lane = laneKey;
-  note.style.left = `${laneIndex * 100}px`;
 
   const spawnTime = performance.now();
   const expectedHitTime = spawnTime + travelDuration;
   note.dataset.hitTime = expectedHitTime;
   note.dataset.handled = 'false';
 
-  laneContainer.appendChild(note);
+  laneContainer.children[laneIndex].appendChild(note);
 
   function animate() {
     const now = performance.now();
@@ -154,6 +152,7 @@ function startGame() {
   startScreen.style.display = 'none';
   gameOverScreen.style.display = 'none';
   game.style.display = 'block';
+  requestAnimationFrame(computeDimensions);
   window.addEventListener('keydown', handleKeyDown);
   noteInterval = setInterval(() => {
     const lane = Math.floor(Math.random() * 4);
