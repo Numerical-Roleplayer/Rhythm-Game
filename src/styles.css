@@ -1,8 +1,8 @@
 :root {
-  --track-top: 45vh;
-  --track-height: 50vh;
+  --track-top: 40vh;
+  --track-height: 55vh;
   --track-width: 420px;
-  --track-angle: 55deg;
+  --track-angle: 50deg;
 }
 
 body {
@@ -43,6 +43,7 @@ body {
 }
 .track {
   position: absolute;
+  background-color: #BFD7EA;
   width: var(--track-width);
   height: var(--track-height);
   top: var(--track-top);
@@ -62,19 +63,20 @@ body {
 .lane {
   flex: 1;
   height: 100%;
-  border-left: 1px solid #D4AF37;
-  border-right: 1px solid #D4AF37;
+  border-left: 1.3px solid #D4AF37;
+  border-right: 1.3px solid #D4AF37;
+  opacity: 0.7;
   position: relative;
 }
 .note {
   position: absolute;
   height: 20px;
-  width: 100%;
+  width: 96%;
   left: 50%;
   transform: translateX(-50%);
   border-radius: 10px;
   opacity: 0.95;
-  border: 2px solid #4c1d95;
+  border: 2px solid #F7A27E;
 }
 .note.d { background-color: #F6D1D1; }
 .note.f { background-color: #F6D1D1; }
@@ -83,24 +85,25 @@ body {
 
 .hit-line {
   position: absolute;
-  bottom: 0;
+  bottom: -10px;
   height: 4px;
   width: 100%;
   border: 0.5px ridge #F7A27E;
+  border-radius: 10px;
   background: #ffecb4;
-  opacity: 0.6;
+  opacity: 1;
 }
 .hit-indicator {
   position: absolute;
   bottom: 0;
   height: 20px;
-  width: 100%;
+  width: 96%;
   left: 50%;
   transform: translateX(-50%);
-  border: 3px groove #D8E4C0;
+  border: 2px solid #a4b18b;
   border-radius: 10px;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 1;
 }
 .hit-flash {
   position: absolute;
@@ -130,7 +133,8 @@ body {
 }
 .feedback-text {
   position: absolute;
-  bottom: -40px;
+  bottom: 0px;
+  left: -65%;
   width: 100%;
   text-align: center;
   font-size: 26px;
