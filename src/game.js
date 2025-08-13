@@ -49,6 +49,12 @@ lanes.forEach((key, index) => {
 function triggerFlash(laneIndex) {
   const flash = document.querySelectorAll('.hit-flash')[laneIndex];
   flash.classList.add('active');
+
+// ADD these three lines for the sweep
+  const laneEl = laneContainer.children[laneIndex];
+  laneEl.classList.add('sweep');
+  setTimeout(() => laneEl.classList.remove('sweep'), 240);
+
   setTimeout(() => {
     flash.classList.remove('active');
   }, 200);

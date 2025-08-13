@@ -115,16 +115,44 @@ body {
 .hit-flash {
   position: absolute;
   z-index: 2;
-  bottom: 0;
+  bottom: -3px;
   height: 30px;
   width: 100%;
   left: 50%;
   transform: translateX(-50%) scale(0.5);
-  border-radius: 50%;
+  border-radius: 999px;
   pointer-events: none;
+
+  /* ring + halo based on your palette */
+  background:
+    radial-gradient(closest-side,
+      rgba(244,182,182,0.95) 0%,   /* #f4b6b6 — tight ring core */
+  rgba(244,182,182,0.55) 35%,
+  rgba(201,212,167,0.25) 60%,  /* #c9d4a7 — halo */
+  rgba(201,212,167,0.00) 80%);
+  filter:
+    drop-shadow(0 0 10px rgba(244,182,182,0.55))
+    drop-shadow(0 0 13px rgba(201,212,167,0.45));
+  opacity: 0;
 }
 .hit-flash.active {
-  transform: translateX(-50%) scale(1.8);
+  animation: bloomPulse 200ms cubic-bezier(.17,.67,.3,.96);
+  
+}
+
+@keyframes bloomPulse {
+  0% {
+    transform: translateX(-50%) scale(0.55);
+    opacity: 0.0;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.35);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateX(-50%) scale(1.85);
+    opacity: 0.5;
+  }
 }
 
 #score {
