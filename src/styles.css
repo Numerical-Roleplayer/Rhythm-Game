@@ -134,16 +134,19 @@ body {
   color: #D4AF37;
 }
 .feedback-text {
-  position: absolute;
-  bottom: 0px;
-  left: -65%;
-  width: 100%;
-  text-align: center;
-  font-size: 26px;
+  position: absolute; /* relative to #game */
+  top: calc(var(--track-top) + (var(--playfield-height, var(--track-height)) ) - 26px);
+  left: calc(50% - (var(--track-width) / 2) - 150px); /* 16px gap from track edge */
+  transform: translateX(-100%); /* place box fully left of that anchor */
+  min-width: 160px;
+  text-align: right;
+  font-size: 30px;
   font-family: 'Parisienne', cursive;
   color: #D4AF37;
   z-index: 3;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  will-change: opacity, transform;
 }
+.feedback-text.show { transform: translateX(-100%) translateY(-6px); }
