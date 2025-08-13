@@ -14,15 +14,17 @@
     <button id="start-button">Start</button>
   </div>
 
-  <div id="game">
-    <div id="score">Hit Rate: 100%</div>
-    <div class="track">
-      <div class="lane-lines"></div>
-      <div class="lane-container" id="lane-container"></div>
-      <div class="hit-line"></div>
+    <div id="game">
+      <div id="score">Hit Rate: 100%</div>
+      <div class="track">
+        <div class="lane-line" style="--line-n: var(--line-1);"></div>
+        <div class="lane-line" style="--line-n: var(--line-2);"></div>
+        <div class="lane-line" style="--line-n: var(--line-3);"></div>
+        <div class="lane-container" id="lane-container"></div>
+        <div class="hit-line"></div>
+      </div>
+      <div class="feedback-text" id="feedback"></div>
     </div>
-    <div class="feedback-text" id="feedback"></div>
-  </div>
 
   <div id="game-over" class="overlay" style="display: none;">
     <div id="final-score"></div>
