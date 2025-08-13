@@ -32,9 +32,9 @@ if (import.meta.env.DEV) {
   console.log("Initializing game with travelDuration:", travelDuration);
 }
 
-lanes.forEach((key) => {
+lanes.forEach((key, index) => {
   const lane = document.createElement('div');
-  lane.className = 'lane';
+  lane.classList.add('lane', `lane-${index}`);
   laneContainer.appendChild(lane);
 
   const indicator = document.createElement('div');
