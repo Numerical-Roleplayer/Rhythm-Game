@@ -46,6 +46,17 @@ Notes fall through four lanes that correspond to the following keys:
 - Test changes in a browser before committing.
 - Write descriptive commit messages that explain the intent of the change.
 
+## Lane Offsets
+
+Each lane receives a unique class name (`lane-0` to `lane-3`). To nudge notes or hit indicators horizontally, adjust the `--note-offset` and `--indicator-offset` variables for each lane in `src/styles.css`:
+
+```css
+.lane-0 .note { --note-offset: 0px; }
+.lane-0 .hit-indicator { --indicator-offset: 0px; }
+```
+
+Increase or decrease these pixel values to fine-tune alignment.
+
 ## Roadmap
 
 Planned enhancements include:

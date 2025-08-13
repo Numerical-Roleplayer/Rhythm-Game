@@ -4,6 +4,8 @@
   --track-width: 420px;
   --track-angle: 50deg;
   --playfield-height: 55vh;
+  --note-offset: 0px;
+  --indicator-offset: 0px;
 }
 
 body {
@@ -87,7 +89,7 @@ body {
   height: 20px;
   width: 96%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(calc(-50% + var(--note-offset)));
   border-radius: 10px;
   z-index: 2;
 }
@@ -107,7 +109,7 @@ body {
   height: 20px;
   width: 96%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(calc(-50% + var(--indicator-offset)));
   border-radius: 10px;
   pointer-events: none;
 }
@@ -150,3 +152,17 @@ body {
   will-change: opacity, transform;
 }
 .feedback-text.show { transform: translateX(-100%) translateY(-6px); }
+
+/* Lane-specific horizontal offsets.
+   Adjust --note-offset and --indicator-offset values to fine-tune alignment. */
+.lane-0 .note { --note-offset: 0px; }
+.lane-0 .hit-indicator { --indicator-offset: 0px; }
+
+.lane-1 .note { --note-offset: 0px; }
+.lane-1 .hit-indicator { --indicator-offset: 0px; }
+
+.lane-2 .note { --note-offset: 0px; }
+.lane-2 .hit-indicator { --indicator-offset: 0px; }
+
+.lane-3 .note { --note-offset: 0px; }
+.lane-3 .hit-indicator { --indicator-offset: 0px; }
