@@ -1,14 +1,7 @@
+
 .track {
 /* Rose Aurora — subtle rose cast for warmer feel */
-background:
-/* lane seams (4 lanes => 25% each) */
-  repeating-linear-gradient(
-    90deg,
-    transparent 0 calc(25% - 1px),
-    rgba(212,175,55,.35) calc(25% - 1px) calc(25% + 1px)
-  ),
-  /* glassy body */
-  linear-gradient(
+background: linear-gradient(
     180deg,
     #f1e5c3 0%,   /* Porcelain White */
     #d2e9f8 35%,  /* very light powder */
@@ -28,18 +21,19 @@ border-radius: 14px;
 .track::before {
   content: "";
   position: absolute;
-  inset: -30px 0 auto 0; /* slightly above the top */
+  top: 0;
+  left: 0;
+  right: 0;
   height: 80px;
   z-index: 0;
   pointer-events: none;
   /* a soft, semi-opaque gradient that reads as a blur cap */
-  background:
-    radial-gradient(120% 60% at 50% 0%,
+  background: radial-gradient(120% 60% at 50% 0%,
       rgba(46,58,70,0.50) 0%,   /* slate core to match body bg */
       rgba(212,175,55,0.16) 35%,/* whisper of your overlay rose */
       rgba(46,58,70,0.00) 75%    /* vanish into the track */
     );
-    border-radius: 14px;
+  border-radius: inherit;
   filter: blur(7px);
 }
 
@@ -47,23 +41,19 @@ border-radius: 14px;
 .track::after {
   content: "";
   position: absolute;
-  inset: auto 0 -12px 0; /* slightly below bottom */
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 100px;
   z-index: 0;
   pointer-events: none;
-  background:
-    linear-gradient(
+  background: linear-gradient(
       to bottom,
       rgba(0,0,0,0.00) 0%,
       rgba(0,0,0,0.25) 55%,
       rgba(0,0,0,0.45) 100%
     );
-}
-
-.lane {
-  border-left: 1.3px solid #D4AF37;
-  border-right: 1.3px solid #D4AF37;
-  opacity: 0.7;
+  border-radius: inherit;
 }
 
 .note {
