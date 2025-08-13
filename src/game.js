@@ -48,16 +48,20 @@ lanes.forEach((key, index) => {
 
 function triggerFlash(laneIndex) {
   const flash = document.querySelectorAll('.hit-flash')[laneIndex];
-  flash.classList.add('active');
-
-// ADD these three lines for the sweep
   const laneEl = laneContainer.children[laneIndex];
-  laneEl.classList.add('sweep');
-  setTimeout(() => laneEl.classList.remove('sweep'), 240);
 
-  setTimeout(() => {
-    flash.classList.remove('active');
-  }, 200);
+  // Restart flash and sweep animations on every hit
+  flash.classList.remove('active');
+  laneEl.classList.remove('sweep');
+  // Force reflow to allow animations to retrigger
+  void flash.offsetWidth;
+
+  flash.classList.add('active');
+  laneEl.classList.add('sweep');
+
+  // Clear classes after animations complete
+  setTimeout(() => flash.classList.remove('active'), 200);
+  setTimeout(() => laneEl.classList.remove('sweep'), 240);
 }
 
 function spawnNote(laneIndex) {
