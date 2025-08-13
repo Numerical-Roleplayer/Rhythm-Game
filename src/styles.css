@@ -142,6 +142,8 @@ body {
   font-size: 26px;
   font-family: 'Parisienne', cursive;
   color: #D4AF37;
+  z-index: 3;
+  pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
