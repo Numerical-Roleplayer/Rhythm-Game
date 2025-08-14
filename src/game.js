@@ -151,7 +151,10 @@ function spawnHoldNote(laneIndex, holdDuration) {
     releaseTime,
     type: 'hold',
     headEl: head,
+    tailEl: tail,
+    tailHeight,
     holding: false,
+    animFrame: null,
   };
   lanes[laneIndex].push(noteObj);
 
@@ -162,20 +165,21 @@ function spawnHoldNote(laneIndex, holdDuration) {
   const startTop = -40 - tailHeight;
   const totalDistance = hitY + 40 + tailHeight;
   function animate() {
+    if (noteObj.holding) return;
     const now = performance.now();
     const progress = Math.min((now - spawnTime) / totalDuration, 1);
     const y = startTop + progress * totalDistance;
     el.style.top = `${y}px`;
     if (!el.isConnected) return;
     if (progress < 1) {
-      requestAnimationFrame(animate);
+      noteObj.animFrame = requestAnimationFrame(animate);
     } else {
       el.style.opacity = '0';
       el.style.pointerEvents = 'none';
     }
   }
 
-  requestAnimationFrame(animate);
+  noteObj.animFrame = requestAnimationFrame(animate);
 }
 
 function handleKeyDown(e) {
@@ -209,7 +213,12 @@ function handleKeyDown(e) {
   if (note.type === 'hold') {
     if (note.holding) return;
     note.holding = true;
+    if (note.animFrame) cancelAnimationFrame(note.animFrame);
     const remaining = note.releaseTime - performance.now();
+    const tailHeight = note.tailHeight;
+    note.el.style.top = `${hitY - tailHeight}px`;
+    note.tailEl.style.transition = `height ${remaining}ms linear`;
+    note.tailEl.style.height = '0px';
     note.holdTimer = setTimeout(() => completeHold(laneIndex, note), remaining);
     triggerFlash(laneIndex);
     showFeedback(accuracy, diff < 0 ? 'Early' : 'Late');
@@ -231,7 +240,7 @@ function handleKeyUp(e) {
   if (!note || note.type !== 'hold' || !note.holding) return;
   if (performance.now() < note.releaseTime) {
     clearTimeout(note.holdTimer);
-    handleLapse(laneIndex, note);
+    handleLapse(laneIndex, note, true);
   }
 }
 
@@ -248,7 +257,7 @@ function completeHold(laneIndex, noteObj) {
   holdActive = false;
 }
 
-function handleLapse(laneIndex, noteObj) {
+function handleLapse(laneIndex, noteObj, suppressFeedback = false) {
   const queue = lanes[laneIndex];
   const idx = queue.indexOf(noteObj);
   if (idx === -1) return;
@@ -258,7 +267,7 @@ function handleLapse(laneIndex, noteObj) {
   if (noteObj.type === 'hold') holdActive = false;
   streak = 0;
   multiplier = 1;
-  showFeedback('Lapse');
+  if (!suppressFeedback) showFeedback('Lapse');
   updateScore();
 }
 
