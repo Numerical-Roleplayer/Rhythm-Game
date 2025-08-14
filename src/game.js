@@ -7,17 +7,21 @@ const startButton = document.getElementById('start-button');
 const gameOverScreen = document.getElementById('game-over');
 const restartButton = document.getElementById('restart-button');
 const finalScore = document.getElementById('final-score');
-const lanes = ['d', 'f', 'j', 'k'];
-let totalNotes = 0;
-let hitNotes = 0;
-let poisedCount = 0;
-let balancedCount = 0;
-let waveringCount = 0;
-let lapseCount = 0;
-let totalDelay = 0;
+
+const laneKeys = ['d', 'f', 'j', 'k'];
+const KEY_MAP = { d: 0, f: 1, j: 2, k: 3 };
+const lanes = [[], [], [], []];
+
+let score = 0;
+let combo = 0;
 let noteInterval = null;
 let gameTimeout = null;
 const songDuration = 30000; // duration placeholder in ms
+
+const PERFECT_WINDOW = 25;
+const GREAT_WINDOW = 75;
+const GOOD_WINDOW = 125;
+const LATE_WINDOW = 150;
 
 const travelDuration = 1300;
 let hitY = 0;
@@ -32,7 +36,7 @@ if (import.meta.env.DEV) {
   console.log("Initializing game with travelDuration:", travelDuration);
 }
 
-lanes.forEach((key, index) => {
+laneKeys.forEach((key, index) => {
   const lane = document.createElement('div');
   lane.classList.add('lane', `lane-${index}`);
   laneContainer.appendChild(lane);
@@ -65,40 +69,27 @@ function triggerFlash(laneIndex) {
 }
 
 function spawnNote(laneIndex) {
-  const note = document.createElement('div');
-  const laneKey = lanes[laneIndex];
-  note.className = `note ${laneKey}`;
-  note.dataset.lane = laneKey;
+  const el = document.createElement('div');
+  const laneKey = laneKeys[laneIndex];
+  el.className = `note ${laneKey}`;
+  laneContainer.children[laneIndex].appendChild(el);
+
+  const hitTime = performance.now() + travelDuration;
+  const noteObj = { el, hitTime };
+  lanes[laneIndex].push(noteObj);
+
+  const missDelay = hitTime + LATE_WINDOW - performance.now();
+  noteObj.missTimer = setTimeout(() => handleMiss(laneIndex, noteObj), missDelay);
 
   const spawnTime = performance.now();
-  const expectedHitTime = spawnTime + travelDuration;
-  note.dataset.hitTime = expectedHitTime;
-  note.dataset.handled = 'false';
-
-  laneContainer.children[laneIndex].appendChild(note);
-
   function animate() {
     const now = performance.now();
-    const elapsed = now - spawnTime;
-    const progress = Math.min(elapsed / travelDuration, 1);
+    const progress = Math.min((now - spawnTime) / travelDuration, 1);
     const y = progress * (hitY + 40);
-    note.style.top = `${y - 40}px`;
-
-    if (note.dataset.handled === 'true' || !note.isConnected) {
-      return;
-    }
-
+    el.style.top = `${y - 40}px`;
+    if (!el.isConnected) return;
     if (progress < 1) {
       requestAnimationFrame(animate);
-    } else {
-      note.remove();
-      totalNotes++;
-      lapseCount++;
-      updateScore();
-      showFeedback('Lapse!');
-      if (import.meta.env.DEV) {
-        console.log(`Note missed. Total notes: ${totalNotes}`);
-      }
     }
   }
 
@@ -107,57 +98,57 @@ function spawnNote(laneIndex) {
 
 function handleKeyDown(e) {
   const key = e.key.toLowerCase();
-  if (!lanes.includes(key)) return;
+  const laneIndex = KEY_MAP[key];
+  if (laneIndex === undefined) return;
 
-  const notes = Array.from(document.querySelectorAll('.note'));
-  const now = performance.now();
+  const note = lanes[laneIndex][0];
+  if (!note) return;
 
-  for (let note of notes) {
-    if (note.dataset.lane !== key) continue;
+  const diff = performance.now() - note.hitTime;
+  if (diff < -LATE_WINDOW || diff > LATE_WINDOW) return;
 
-    const expectedHitTime = Number(note.dataset.hitTime);
-    const diff = now - expectedHitTime;
-    const timingError = Math.abs(diff);
-
-    let result = 'Lapse!';
-    if (timingError <= 25) {
-      result = 'Poised!';
-    } else if ((diff > 25 && diff <= 50) || (diff < -25 && diff >= -50)) {
-      result = 'Balanced!';
-    } else if ((diff > 50 && diff <= 80) || (diff < -50 && diff >= -80)) {
-      result = 'Wavering!';
-    }
-
-    if (result !== 'Lapse!') {
-      hitNotes++;
-      totalNotes++;
-      totalDelay += timingError;
-      if (result === 'Poised!') {
-        poisedCount++;
-      } else if (result === 'Balanced!') {
-        balancedCount++;
-      } else if (result === 'Wavering!') {
-        waveringCount++;
-      }
-      note.dataset.handled = 'true';
-      note.remove();
-      updateScore();
-      showFeedback(result);
-      triggerFlash(lanes.indexOf(key));
-      break;
-    }
+  let accuracy;
+  let points;
+  const absDiff = Math.abs(diff);
+  if (absDiff <= PERFECT_WINDOW) {
+    accuracy = 'Perfect';
+    points = 100;
+  } else if (absDiff <= GREAT_WINDOW) {
+    accuracy = 'Great';
+    points = 70;
+  } else if (absDiff <= GOOD_WINDOW) {
+    accuracy = 'Good';
+    points = 40;
+  } else {
+    handleMiss(laneIndex, note);
+    return;
   }
+
+  combo++;
+  score += points * combo;
+  clearTimeout(note.missTimer);
+  note.el.remove();
+  lanes[laneIndex].shift();
+  triggerFlash(laneIndex);
+  showFeedback(accuracy, diff < 0 ? 'Early' : 'Late');
+  updateScore();
+}
+
+function handleMiss(laneIndex, noteObj) {
+  const queue = lanes[laneIndex];
+  const idx = queue.indexOf(noteObj);
+  if (idx === -1) return;
+  queue.splice(idx, 1);
+  noteObj.el.remove();
+  combo = 0;
+  showFeedback('Miss');
+  updateScore();
 }
 
 function startGame() {
   stopGame();
-  totalNotes = 0;
-  hitNotes = 0;
-  poisedCount = 0;
-  balancedCount = 0;
-  waveringCount = 0;
-  lapseCount = 0;
-  totalDelay = 0;
+  score = 0;
+  combo = 0;
   updateScore();
   startScreen.style.display = 'none';
   gameOverScreen.style.display = 'none';
@@ -178,33 +169,22 @@ function stopGame() {
   noteInterval = null;
   gameTimeout = null;
   document.querySelectorAll('.note').forEach(n => n.remove());
+  lanes.forEach(l => (l.length = 0));
 }
 
 function endGame() {
   stopGame();
-  finalScore.textContent = scoreDisplay.textContent;
-  const avgDelay = hitNotes > 0 ? (totalDelay / hitNotes).toFixed(2) : 0;
-  document.getElementById('stat-total').textContent = totalNotes;
-  document.getElementById('stat-hit').textContent = hitNotes;
-  document.getElementById('stat-poised').textContent = poisedCount;
-  document.getElementById('stat-balanced').textContent = balancedCount;
-  document.getElementById('stat-wavering').textContent = waveringCount;
-  document.getElementById('stat-lapse').textContent = lapseCount;
-  document.getElementById('stat-delay').textContent = avgDelay;
+  finalScore.textContent = `Final Score: ${score}`;
   game.style.display = 'none';
   gameOverScreen.style.display = 'flex';
 }
 
 function updateScore() {
-  const percent = totalNotes > 0 ? Math.floor((hitNotes / totalNotes) * 100) : 100;
-  scoreDisplay.textContent = `Hit Rate: ${percent}%`;
-  if (import.meta.env.DEV) {
-    console.log(`Total: ${totalNotes}, Hits: ${hitNotes}, Hit Rate: ${percent}%`);
-  }
+  scoreDisplay.textContent = `Score: ${score} (Combo: ${combo})`;
 }
 
-function showFeedback(text) {
-  feedback.textContent = text;
+function showFeedback(text, timing) {
+  feedback.textContent = timing ? `${text} - ${timing}` : text;
   feedback.style.opacity = '1';
   clearTimeout(feedback.timeout);
   feedback.timeout = setTimeout(() => {
