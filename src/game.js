@@ -13,17 +13,16 @@ const KEY_MAP = { d: 0, f: 1, j: 2, k: 3 };
 const lanes = [[], [], [], []];
 
 let score = 0;
-let combo = 0;
 let noteInterval = null;
 let gameTimeout = null;
 const songDuration = 30000; // duration placeholder in ms
 
-const PERFECT_WINDOW = 25;
-const GREAT_WINDOW = 75;
-const GOOD_WINDOW = 125;
+const POISED_WINDOW = 25;
+const BALANCED_WINDOW = 75;
+const WAVERING_WINDOW = 125;
 const LATE_WINDOW = 150;
 
-// Fortnite-style scoring
+// Streak-based multiplier scoring
 const MULT_MAX = 6;
 const STREAK_STEP = 10; // every 10 hits -> next multiplier
 let streak = 0;
@@ -31,9 +30,9 @@ let multiplier = 1;
 
 // Base values per tier
 const BASE_POINTS = {
-  Poised: 36,  // Perfect
-  Balanced:   30,  // Balanced-equivalent
-  Wavering:    26   // Wavering-equivalent
+  Poised: 36,
+  Balanced: 30,
+  Wavering: 26
 };
 
 function updateMultiplierFromStreak() {
@@ -97,8 +96,8 @@ function spawnNote(laneIndex) {
   const noteObj = { el, hitTime };
   lanes[laneIndex].push(noteObj);
 
-  const missDelay = hitTime + LATE_WINDOW - performance.now();
-  noteObj.missTimer = setTimeout(() => handleMiss(laneIndex, noteObj), missDelay);
+  const lapseDelay = hitTime + LATE_WINDOW - performance.now();
+  noteObj.lapseTimer = setTimeout(() => handleLapse(laneIndex, noteObj), lapseDelay);
 
   const spawnTime = performance.now();
   function animate() {
@@ -127,19 +126,15 @@ function handleKeyDown(e) {
   if (diff < -LATE_WINDOW || diff > LATE_WINDOW) return;
 
   let accuracy;
-  let points;
   const absDiff = Math.abs(diff);
-  if (absDiff <= PERFECT_WINDOW) {
+  if (absDiff <= POISED_WINDOW) {
     accuracy = 'Poised';
-    points = 100;
-  } else if (absDiff <= GREAT_WINDOW) {
+  } else if (absDiff <= BALANCED_WINDOW) {
     accuracy = 'Balanced';
-    points = 70;
-  } else if (absDiff <= GOOD_WINDOW) {
+  } else if (absDiff <= WAVERING_WINDOW) {
     accuracy = 'Wavering';
-    points = 40;
   } else {
-    handleMiss(laneIndex, note);
+    handleLapse(laneIndex, note);
     return;
   }
 
@@ -147,7 +142,7 @@ function handleKeyDown(e) {
   updateMultiplierFromStreak();
   score += BASE_POINTS[accuracy] * multiplier;
 
-  clearTimeout(note.missTimer);
+  clearTimeout(note.lapseTimer);
   note.el.remove();
   lanes[laneIndex].shift();
   triggerFlash(laneIndex);
@@ -155,7 +150,7 @@ function handleKeyDown(e) {
   updateScore();
 }
 
-function handleMiss(laneIndex, noteObj) {
+function handleLapse(laneIndex, noteObj) {
   const queue = lanes[laneIndex];
   const idx = queue.indexOf(noteObj);
   if (idx === -1) return;
@@ -163,7 +158,7 @@ function handleMiss(laneIndex, noteObj) {
   noteObj.el.remove();
   streak = 0;
   multiplier = 1;
-  showFeedback('Lapse!');
+  showFeedback('Lapse');
   updateScore();
 }
 
