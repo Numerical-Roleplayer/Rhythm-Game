@@ -23,6 +23,25 @@ const GREAT_WINDOW = 75;
 const GOOD_WINDOW = 125;
 const LATE_WINDOW = 150;
 
+// Fortnite-style scoring
+const MULT_MAX = 6;
+const STREAK_STEP = 10; // every 10 hits -> next multiplier
+let streak = 0;
+let multiplier = 1;
+
+// Base values per tier
+const BASE_POINTS = {
+  Poised: 36,  // Perfect
+  Balanced:   30,  // Balanced-equivalent
+  Wavering:    26   // Wavering-equivalent
+};
+
+function updateMultiplierFromStreak() {
+  // 0-9 -> x1, 10-19 -> x2, ... 50+ -> x6
+  multiplier = 1 + Math.min(5, Math.floor(streak / STREAK_STEP));
+}
+
+
 const travelDuration = 1300;
 let hitY = 0;
 
@@ -111,21 +130,23 @@ function handleKeyDown(e) {
   let points;
   const absDiff = Math.abs(diff);
   if (absDiff <= PERFECT_WINDOW) {
-    accuracy = 'Perfect';
+    accuracy = 'Poised';
     points = 100;
   } else if (absDiff <= GREAT_WINDOW) {
-    accuracy = 'Great';
+    accuracy = 'Balanced';
     points = 70;
   } else if (absDiff <= GOOD_WINDOW) {
-    accuracy = 'Good';
+    accuracy = 'Wavering';
     points = 40;
   } else {
     handleMiss(laneIndex, note);
     return;
   }
 
-  combo++;
-  score += points * combo;
+  streak++;
+  updateMultiplierFromStreak();
+  score += BASE_POINTS[accuracy] * multiplier;
+
   clearTimeout(note.missTimer);
   note.el.remove();
   lanes[laneIndex].shift();
@@ -140,15 +161,18 @@ function handleMiss(laneIndex, noteObj) {
   if (idx === -1) return;
   queue.splice(idx, 1);
   noteObj.el.remove();
-  combo = 0;
-  showFeedback('Miss');
+  streak = 0;
+  multiplier = 1;
+  showFeedback('Lapse!');
   updateScore();
 }
 
 function startGame() {
   stopGame();
   score = 0;
-  combo = 0;
+  streak = 0;
+  multiplier = 1;
+
   updateScore();
   startScreen.style.display = 'none';
   gameOverScreen.style.display = 'none';
@@ -180,7 +204,7 @@ function endGame() {
 }
 
 function updateScore() {
-  scoreDisplay.textContent = `Score: ${score} (Combo: ${combo})`;
+  scoreDisplay.textContent = `Score: ${score} (x${multiplier} • Streak: ${streak})`;
 }
 
 function showFeedback(text, timing) {
