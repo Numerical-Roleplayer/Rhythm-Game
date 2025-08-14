@@ -108,6 +108,11 @@ function spawnNote(laneIndex) {
     if (!el.isConnected) return;
     if (progress < 1) {
       requestAnimationFrame(animate);
+    } else {
+    // Option A: hide immediately at the hit line, but keep it hittable
+    // (late hits still work until LATE_WINDOW elapses & handleLapse runs)
+    el.style.opacity = '0';
+    el.style.pointerEvents = 'none';
     }
   }
 
