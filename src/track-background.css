@@ -191,4 +191,5 @@ border-radius: 14px;
   0%   { opacity: 0;   transform: translateY(12%); }
   20%  { opacity: .48; transform: translateY(6%); }
   60%  { opacity: .30; transform: translateY(0%); }
-  100% { opacity: 0;   transform: translateY(-4%); }}
+  100% { opacity: 0;   transform: translateY(-4%); }
+}
