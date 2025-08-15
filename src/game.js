@@ -258,11 +258,13 @@ function completeHold(laneIndex, noteObj) {
   }
   if (noteObj.holdTimer) clearTimeout(noteObj.holdTimer);
   noteObj.el.remove();
+  const indicator = laneContainer.children[laneIndex].querySelector('.hit-indicator');
+  if (indicator) indicator.classList.remove('sustaining');
   holdActive = false;
 }
 
 function handleLapse(laneIndex, noteObj, suppressFeedback = false, isEarlyRelease = false) {
-  const queue = laneQueues[laneIndex] || lanes[laneIndex]; // pick the one you actually use
+  const queue = lanes[laneIndex];
   const idx = queue.indexOf(noteObj);
   if (idx === -1) return;
 
@@ -324,7 +326,7 @@ function stopGame() {
   window.removeEventListener('keyup', handleKeyUp);
   noteInterval = null;
   gameTimeout = null;
-  document.querySelectorAll('.note, .hold-note').forEach(n => n.remove());
+  document.querySelectorAll('.note, .hold').forEach(n => n.remove());
   lanes.forEach(l => {
     l.forEach(n => {
       clearTimeout(n.lapseTimer);

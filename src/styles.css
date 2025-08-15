@@ -94,7 +94,7 @@ body {
 }
 
 /* Hold note container with head and tail */
-.hold-note {
+.hold {
   position: absolute;
   width: 96%;
   left: 50%;
@@ -127,7 +127,7 @@ body {
 }
 .hit-indicator {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   bottom: 0;
   height: 20px;
   width: 96%;
@@ -138,7 +138,7 @@ body {
 }
 .hit-flash {
   position: absolute;
-  z-index: 2;
+  z-index: 4;
   bottom: -3px;
   height: 30px;
   width: 100%;
