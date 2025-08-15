@@ -86,16 +86,17 @@ border-radius: 14px;
 .hold.holding::after {
   content: "";
   position: absolute;
-  bottom: 0; /* anchor at the hit line end */
-  left: -10px; /* give it a little horizontal bleed */
-  width: calc(100% + 20px); /* extra width for soft edge */
+  bottom: 20px; /* anchor at the hit line end */
+  left: 50%; /* give it a little horizontal bleed */
+  transform: translateX(-50%);
+  width: calc(5% + 15px); /* extra width for soft edge */
   
   /* FIXED HEIGHT: set to the tail's full starting length */
   height: var(--hold-tail-full-height, 200px); /* see JS note below */
 
   pointer-events: none;
   z-index: 1;
-  opacity: 0.85;
+  opacity: 1;
 
   background: linear-gradient(
     60deg,
