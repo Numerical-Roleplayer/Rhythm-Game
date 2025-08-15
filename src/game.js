@@ -124,7 +124,7 @@ function spawnNote(laneIndex) {
 function spawnHoldNote(laneIndex, holdDuration) {
   const el = document.createElement('div');
   const laneKey = laneKeys[laneIndex];
-  el.className = 'hold-note';
+  el.className = 'hold';
 
   const head = document.createElement('div');
   head.className = `hold-head note ${laneKey}`;
@@ -139,6 +139,7 @@ function spawnHoldNote(laneIndex, holdDuration) {
   const distance = hitY + 40;
   const tailHeight = holdDuration * distance / travelDuration;
   tail.style.height = `${tailHeight}px`;
+  el.style.setProperty('--hold-tail-full-height', `${tailHeight}px`);
   el.style.height = `${tailHeight + 20}px`;
 
   const spawnTime = performance.now();
@@ -220,6 +221,9 @@ function handleKeyDown(e) {
     note.tailEl.style.transition = `height ${remaining}ms linear`;
     note.tailEl.style.height = '0px';
     note.holdTimer = setTimeout(() => completeHold(laneIndex, note), remaining);
+    // Shimmer ON: tail ribbon + holder glitter
+    note.el.classList.add('holding');
+    laneContainer.children[laneIndex].querySelector('.hit-indicator').classList.add('sustaining');
     triggerFlash(laneIndex);
     showFeedback(accuracy, diff < 0 ? 'Early' : 'Late');
     updateScore();
@@ -257,19 +261,34 @@ function completeHold(laneIndex, noteObj) {
   holdActive = false;
 }
 
-function handleLapse(laneIndex, noteObj, suppressFeedback = false) {
-  const queue = lanes[laneIndex];
+function handleLapse(laneIndex, noteObj, suppressFeedback = false, isEarlyRelease = false) {
+  const queue = laneQueues[laneIndex] || lanes[laneIndex]; // pick the one you actually use
   const idx = queue.indexOf(noteObj);
   if (idx === -1) return;
+
   queue.splice(idx, 1);
+  if (noteObj.missTimer) clearTimeout(noteObj.missTimer);
   if (noteObj.holdTimer) clearTimeout(noteObj.holdTimer);
+
+  // Shimmer OFF
+  noteObj.el.classList.remove('holding');
+  const indicator = laneContainer.children[laneIndex].querySelector('.hit-indicator');
+  if (indicator) indicator.classList.remove('sustaining');
+
   noteObj.el.remove();
+
   if (noteObj.type === 'hold') holdActive = false;
-  streak = 0;
-  multiplier = 1;
-  if (!suppressFeedback) showFeedback('Lapse');
+
+  // Only reset streak on a real miss (not early release cleanup)
+  if (!isEarlyRelease) {
+    streak = 0;
+    multiplier = 1;
+  }
+
+  if (!suppressFeedback && !isEarlyRelease) showFeedback('Lapse');
   updateScore();
 }
+
 
 function startGame() {
   stopGame();

@@ -77,6 +77,45 @@ border-radius: 14px;
   opacity: 0.95;
 }
 
+/* Diagonal shimmer climbs upward */
+@keyframes ribbonShimmerUp {
+  0%   { background-position-y: 100%; }
+  100% { background-position-y: 0%; }
+}
+
+.hold.holding::after {
+  content: "";
+  position: absolute;
+  bottom: 0; /* anchor at the hit line end */
+  left: -10px; /* give it a little horizontal bleed */
+  width: calc(100% + 20px); /* extra width for soft edge */
+  
+  /* FIXED HEIGHT: set to the tail's full starting length */
+  height: var(--hold-tail-full-height, 200px); /* see JS note below */
+
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.85;
+
+  background: linear-gradient(
+    60deg,
+    rgba(244,182,182,0.00) 20%,  /* transparent rose */
+    rgba(244,182,182,0.40) 45%,  /* rose core */
+    rgba(255,255,255,0.30) 50%,  /* specular highlight */
+    rgba(201,212,167,0.38) 60%,  /* sage halo */
+    rgba(201,212,167,0.00) 80%   /* fade out */
+  );
+  background-size: 100% 140%;
+  filter: blur(0.3px);
+  animation: ribbonShimmerUp 420ms linear infinite;
+}
+
+/* Shimmer motion stays the same */
+@keyframes ribbonShimmerUp {
+  0%   { background-position-y: 100%; }
+  100% { background-position-y: 0%; }
+}
+
 .hit-line {
   border: 0.5px ridge #F7A27E;
   background: #ffecb4;
@@ -86,6 +125,35 @@ border-radius: 14px;
 .hit-indicator {
   border: 2px solid #a4b18b;
   opacity: 1;
+}
+
+.hit-indicator.sustaining::after {
+  content: "";
+  position: absolute;
+  inset: -2px;                     /* sit just outside border for a gilded feel */
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: screen;
+  opacity: 1;
+
+  /* a small constellation of glints in your palette */
+  background:
+    radial-gradient(6px 6px at 20% 62%, rgba(212,175,55,0.55), transparent 60%), /* gold */
+    radial-gradient(4px 4px at 64% 34%, rgba(201,212,167,0.55), transparent 60%),/* sage */
+    radial-gradient(5px 5px at 82% 74%, rgba(244,182,182,0.40), transparent 60%),/* rose */
+    radial-gradient(3px 3px at 36% 42%, rgba(183,214,239,0.50), transparent 60%);/* powder blue */
+
+  animation: holderTwinkle 900ms ease-in-out infinite;
+  will-change: opacity, transform, filter, background-position;
+}
+
+/* Occasional micro-shift + twinkle to feel “alive” */
+@keyframes holderTwinkle {
+  0%   { opacity: 0.14; transform: scale(0.985); filter: blur(0px); }
+  35%  { opacity: 0.30; transform: scale(1.005); filter: blur(0.2px); }
+  70%  { opacity: 0.20; transform: scale(1.000); filter: blur(0px); }
+  100% { opacity: 0.14; transform: scale(0.985); }
 }
 
 .hit-flash {
