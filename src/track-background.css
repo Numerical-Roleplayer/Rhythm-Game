@@ -83,16 +83,16 @@ border-radius: 14px;
   100% { background-position-y: 0%; }
 }
 
-.hold.holding::after {
+.hold.holding .hold-tail::after {
   content: "";
   position: absolute;
-  bottom: 20px; /* anchor at the hit line end */
+  bottom: 0; /* anchor at the head end */
   left: 50%; /* give it a little horizontal bleed */
   transform: translateX(-50%);
-  width: calc(5% + 15px); /* extra width for soft edge */
-  
-  /* FIXED HEIGHT: set to the tail's full starting length */
-  height: var(--hold-tail-full-height, 200px); /* see JS note below */
+  width: calc(100% + 15px); /* extra width for soft edge */
+
+  /* Track the current tail height */
+  height: 100%;
 
   pointer-events: none;
   z-index: 1;
@@ -109,12 +109,6 @@ border-radius: 14px;
   background-size: 100% 140%;
   filter: blur(0.3px);
   animation: ribbonShimmerUp 420ms linear infinite;
-}
-
-/* Shimmer motion stays the same */
-@keyframes ribbonShimmerUp {
-  0%   { background-position-y: 100%; }
-  100% { background-position-y: 0%; }
 }
 
 .hit-line {
