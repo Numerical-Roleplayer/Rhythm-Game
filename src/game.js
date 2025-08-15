@@ -139,7 +139,6 @@ function spawnHoldNote(laneIndex, holdDuration) {
   const distance = hitY + 40;
   const tailHeight = holdDuration * distance / travelDuration;
   tail.style.height = `${tailHeight}px`;
-  el.style.setProperty('--hold-tail-full-height', `${tailHeight}px`);
   el.style.height = `${tailHeight + 20}px`;
 
   const spawnTime = performance.now();
