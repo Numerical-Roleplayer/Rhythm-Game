@@ -184,22 +184,24 @@ body {
   bottom: 20px;
   left: 20px;
   font-size: 24px;
-  color: #D4AF37;
 }
 
 #multiplier-display {
   position: absolute;
-  top: calc(var(--playfield-height) + 8px);
+  bottom: 0px;
   left: 50%;
   transform: translateX(-50%);
-  width: 40px;
-  height: 40px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  border: 2px solid #D4AF37;
+  
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #D4AF37;
+  font-size: 20px;
+  line-height: 1;
+  
 }
 .feedback-text {
   position: absolute; /* relative to #game */
