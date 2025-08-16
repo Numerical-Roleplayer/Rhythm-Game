@@ -1,5 +1,6 @@
 const game = document.getElementById('game');
-const scoreDisplay = document.getElementById('score');
+const scoreDisplay = document.getElementById('score-display');
+const multiplierDisplay = document.getElementById('multiplier-display');
 const laneContainer = document.getElementById('lane-container');
 const feedback = document.getElementById('feedback');
 const startScreen = document.getElementById('start-screen');
@@ -344,7 +345,8 @@ function endGame() {
 }
 
 function updateScore() {
-  scoreDisplay.textContent = `Score: ${score} (x${multiplier} • Streak: ${streak})`;
+  scoreDisplay.textContent = `${score}`;
+  multiplierDisplay.textContent = `x${multiplier}`;
 }
 
 function showFeedback(text, timing) {
