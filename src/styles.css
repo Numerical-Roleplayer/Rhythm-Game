@@ -93,6 +93,30 @@ body {
   z-index: 2;
 }
 
+/* Hold note container with head and tail */
+.hold {
+  position: absolute;
+  width: 96%;
+  left: 50%;
+  transform: translateX(calc(-50% + var(--note-offset)));
+  z-index: 2;
+}
+.hold-head {
+  position: absolute;
+  bottom: 0;
+  height: 20px;
+  width: 100%;
+  border-radius: 10px;
+}
+.hold-tail {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 20px;
+  width: 5%;
+  border-radius: 4px;
+}
+
 .hit-line {
   position: absolute;
   z-index: 1;
@@ -103,7 +127,7 @@ body {
 }
 .hit-indicator {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   bottom: 0;
   height: 20px;
   width: 96%;
@@ -114,7 +138,7 @@ body {
 }
 .hit-flash {
   position: absolute;
-  z-index: 2;
+  z-index: 4;
   bottom: -3px;
   height: 30px;
   width: 100%;

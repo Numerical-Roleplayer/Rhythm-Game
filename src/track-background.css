@@ -68,6 +68,49 @@ border-radius: 14px;
   background-color: #F6D1D1;
 }
 
+.hold-tail.d,
+.hold-tail.f,
+.hold-tail.j,
+.hold-tail.k {
+  background-color: #F6D1D1;
+  border: 2px solid #F7A27E;
+  opacity: 0.95;
+}
+
+/* Diagonal shimmer climbs upward */
+@keyframes ribbonShimmerUp {
+  0%   { background-position-y: 100%; }
+  100% { background-position-y: 0%; }
+}
+
+.hold.holding .hold-tail::after {
+  content: "";
+  position: absolute;
+  bottom: 0; /* anchor at the head end */
+  left: 50%; /* give it a little horizontal bleed */
+  transform: translateX(-50%);
+  width: calc(100% + 15px); /* extra width for soft edge */
+
+  /* Track the current tail height */
+  height: 100%;
+
+  pointer-events: none;
+  z-index: 1;
+  opacity: 1;
+
+  background: linear-gradient(
+    60deg,
+    rgba(255,192,203,0.00) 20%,  /* transparent blush outer edge */
+  rgba(255,182,193,0.45) 40%,  /* blush core closer to tail */
+  rgba(255,240,245,0.35) 50%,  /* pale rose highlight (tail-side shimmer) */
+  rgba(255,215,160,0.40) 60%,  /* warm gold accent */
+  rgba(255,223,186,0.00) 80%   /* transparent soft gold fade-out */
+  );
+  background-size: 100% 140%;
+  filter: blur(0.6px);
+  animation: ribbonShimmerUp 520ms linear infinite;
+}
+
 .hit-line {
   border: 0.5px ridge #F7A27E;
   background: #ffecb4;
@@ -78,6 +121,40 @@ border-radius: 14px;
   border: 2px solid #a4b18b;
   opacity: 1;
 }
+
+.hit-indicator.sustaining::after {
+  content: "";
+  position: absolute;
+  inset: -2px; /* just outside border for a gilded feel */
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: screen;
+  opacity: 1;
+
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255,182,193,0.65) 0%,   /* blush center */
+    rgba(255,240,245,0.55) 35%,  /* pale rose halo */
+    rgba(255,215,160,0.50) 60%,  /* gold accent */
+    rgba(255,215,160,0.00) 85%   /* fade to transparent */
+  );
+  background-size: 140% 140%; /* larger play space for motion */
+
+  animation: holderTwinkle 400ms ease-in-out infinite;
+  will-change: opacity, transform, filter, background-position;
+}
+
+@keyframes holderTwinkle {
+  0%   { opacity: 0.85; transform: scale(0.985) rotate(0.5deg);  filter: blur(0px);   background-position: 50% 50%; }
+  20%  { opacity: 0.92; transform: scale(1.015) rotate(-0.5deg); filter: blur(0.3px); background-position: 54% 48%; }
+  40%  { opacity: 1.00; transform: scale(1.035) rotate(0.8deg);  filter: blur(0.5px); background-position: 56% 54%; }
+  60%  { opacity: 0.94; transform: scale(1.010) rotate(-0.8deg); filter: blur(0.3px); background-position: 48% 56%; }
+  80%  { opacity: 0.90; transform: scale(1.000) rotate(0.4deg);  filter: blur(0.15px);background-position: 46% 52%; }
+  100% { opacity: 0.85; transform: scale(0.985) rotate(0deg);    filter: blur(0px);   background-position: 50% 50%; }
+}
+
+
 
 .hit-flash {
   opacity: 0;
@@ -114,4 +191,5 @@ border-radius: 14px;
   0%   { opacity: 0;   transform: translateY(12%); }
   20%  { opacity: .48; transform: translateY(6%); }
   60%  { opacity: .30; transform: translateY(0%); }
-  100% { opacity: 0;   transform: translateY(-4%); }}
+  100% { opacity: 0;   transform: translateY(-4%); }
+}

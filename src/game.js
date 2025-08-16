@@ -12,6 +12,8 @@ const laneKeys = ['d', 'f', 'j', 'k'];
 const KEY_MAP = { d: 0, f: 1, j: 2, k: 3 };
 const lanes = [[], [], [], []];
 
+let holdActive = false;
+
 let score = 0;
 let noteInterval = null;
 let gameTimeout = null;
@@ -93,7 +95,7 @@ function spawnNote(laneIndex) {
   laneContainer.children[laneIndex].appendChild(el);
 
   const hitTime = performance.now() + travelDuration;
-  const noteObj = { el, hitTime };
+  const noteObj = { el, hitTime, type: 'normal' };
   lanes[laneIndex].push(noteObj);
 
   const lapseDelay = hitTime + LATE_WINDOW - performance.now();
@@ -117,6 +119,67 @@ function spawnNote(laneIndex) {
   }
 
   requestAnimationFrame(animate);
+}
+
+function spawnHoldNote(laneIndex, holdDuration) {
+  const el = document.createElement('div');
+  const laneKey = laneKeys[laneIndex];
+  el.className = 'hold';
+
+  const head = document.createElement('div');
+  head.className = `hold-head note ${laneKey}`;
+  el.appendChild(head);
+
+  const tail = document.createElement('div');
+  tail.className = `hold-tail ${laneKey}`;
+  el.appendChild(tail);
+
+  laneContainer.children[laneIndex].appendChild(el);
+
+  const distance = hitY + 40;
+  const tailHeight = holdDuration * distance / travelDuration;
+  tail.style.height = `${tailHeight}px`;
+  el.style.height = `${tailHeight + 20}px`;
+
+  const spawnTime = performance.now();
+  const hitTime = spawnTime + travelDuration;
+  const releaseTime = hitTime + holdDuration;
+
+  const noteObj = {
+    el,
+    hitTime,
+    releaseTime,
+    type: 'hold',
+    headEl: head,
+    tailEl: tail,
+    tailHeight,
+    holding: false,
+    animFrame: null,
+  };
+  lanes[laneIndex].push(noteObj);
+
+  const lapseDelay = hitTime + LATE_WINDOW - performance.now();
+  noteObj.lapseTimer = setTimeout(() => handleLapse(laneIndex, noteObj), lapseDelay);
+
+  const totalDuration = travelDuration + holdDuration;
+  const startTop = -40 - tailHeight;
+  const totalDistance = hitY + 40 + tailHeight;
+  function animate() {
+    if (noteObj.holding) return;
+    const now = performance.now();
+    const progress = Math.min((now - spawnTime) / totalDuration, 1);
+    const y = startTop + progress * totalDistance;
+    el.style.top = `${y}px`;
+    if (!el.isConnected) return;
+    if (progress < 1) {
+      noteObj.animFrame = requestAnimationFrame(animate);
+    } else {
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+    }
+  }
+
+  noteObj.animFrame = requestAnimationFrame(animate);
 }
 
 function handleKeyDown(e) {
@@ -146,26 +209,87 @@ function handleKeyDown(e) {
   streak++;
   updateMultiplierFromStreak();
   score += BASE_POINTS[accuracy] * multiplier;
-
   clearTimeout(note.lapseTimer);
-  note.el.remove();
-  lanes[laneIndex].shift();
-  triggerFlash(laneIndex);
-  showFeedback(accuracy, diff < 0 ? 'Early' : 'Late');
-  updateScore();
+  if (note.type === 'hold') {
+    if (note.holding) return;
+    note.holding = true;
+    if (note.animFrame) cancelAnimationFrame(note.animFrame);
+    const remaining = note.releaseTime - performance.now();
+    const tailHeight = note.tailHeight;
+    note.el.style.top = `${hitY - tailHeight}px`;
+    note.tailEl.style.transition = `height ${remaining}ms linear`;
+    note.tailEl.style.height = '0px';
+    note.holdTimer = setTimeout(() => completeHold(laneIndex, note), remaining);
+    // Shimmer ON: tail ribbon + holder glitter
+    note.el.classList.add('holding');
+    laneContainer.children[laneIndex].querySelector('.hit-indicator').classList.add('sustaining');
+    triggerFlash(laneIndex);
+    showFeedback(accuracy, diff < 0 ? 'Early' : 'Late');
+    updateScore();
+  } else {
+    note.el.remove();
+    lanes[laneIndex].shift();
+    triggerFlash(laneIndex);
+    showFeedback(accuracy, diff < 0 ? 'Early' : 'Late');
+    updateScore();
+  }
 }
 
-function handleLapse(laneIndex, noteObj) {
+function handleKeyUp(e) {
+  const key = e.key.toLowerCase();
+  const laneIndex = KEY_MAP[key];
+  if (laneIndex === undefined) return;
+  const note = lanes[laneIndex][0];
+  if (!note || note.type !== 'hold' || !note.holding) return;
+  if (performance.now() < note.releaseTime) {
+    clearTimeout(note.holdTimer);
+    handleLapse(laneIndex, note, true);
+  }
+}
+
+function completeHold(laneIndex, noteObj) {
+  const queue = lanes[laneIndex];
+  if (queue[0] === noteObj) {
+    queue.shift();
+  } else {
+    const idx = queue.indexOf(noteObj);
+    if (idx !== -1) queue.splice(idx, 1);
+  }
+  if (noteObj.holdTimer) clearTimeout(noteObj.holdTimer);
+  noteObj.el.remove();
+  const indicator = laneContainer.children[laneIndex].querySelector('.hit-indicator');
+  if (indicator) indicator.classList.remove('sustaining');
+  holdActive = false;
+}
+
+function handleLapse(laneIndex, noteObj, suppressFeedback = false, isEarlyRelease = false) {
   const queue = lanes[laneIndex];
   const idx = queue.indexOf(noteObj);
   if (idx === -1) return;
+
   queue.splice(idx, 1);
+  if (noteObj.missTimer) clearTimeout(noteObj.missTimer);
+  if (noteObj.holdTimer) clearTimeout(noteObj.holdTimer);
+
+  // Shimmer OFF
+  noteObj.el.classList.remove('holding');
+  const indicator = laneContainer.children[laneIndex].querySelector('.hit-indicator');
+  if (indicator) indicator.classList.remove('sustaining');
+
   noteObj.el.remove();
-  streak = 0;
-  multiplier = 1;
-  showFeedback('Lapse');
+
+  if (noteObj.type === 'hold') holdActive = false;
+
+  // Only reset streak on a real miss (not early release cleanup)
+  if (!isEarlyRelease) {
+    streak = 0;
+    multiplier = 1;
+  }
+
+  if (!suppressFeedback && !isEarlyRelease) showFeedback('Lapse');
   updateScore();
 }
+
 
 function startGame() {
   stopGame();
@@ -179,9 +303,17 @@ function startGame() {
   game.style.display = 'block';
   requestAnimationFrame(computeDimensions);
   window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('keyup', handleKeyUp);
   noteInterval = setInterval(() => {
+    if (holdActive) return;
     const lane = Math.floor(Math.random() * 4);
-    spawnNote(lane);
+    if (Math.random() < 0.1) {
+      const duration = 800 + Math.random() * 800;
+      spawnHoldNote(lane, duration);
+      holdActive = true;
+    } else {
+      spawnNote(lane);
+    }
   }, 800);
   gameTimeout = setTimeout(endGame, songDuration);
 }
@@ -190,10 +322,18 @@ function stopGame() {
   clearInterval(noteInterval);
   clearTimeout(gameTimeout);
   window.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener('keyup', handleKeyUp);
   noteInterval = null;
   gameTimeout = null;
-  document.querySelectorAll('.note').forEach(n => n.remove());
-  lanes.forEach(l => (l.length = 0));
+  document.querySelectorAll('.note, .hold').forEach(n => n.remove());
+  lanes.forEach(l => {
+    l.forEach(n => {
+      clearTimeout(n.lapseTimer);
+      if (n.holdTimer) clearTimeout(n.holdTimer);
+    });
+    l.length = 0;
+  });
+  holdActive = false;
 }
 
 function endGame() {
