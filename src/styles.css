@@ -17,6 +17,11 @@ body {
   overflow: hidden;
 }
 
+.charm-regular {
+  font-family: 'Charm', cursive;
+  font-weight: 400;
+}
+
 #game {
   position: relative;
   width: 100vw;
@@ -182,7 +187,8 @@ body {
 #score-display {
   position: absolute;
   bottom: 20px;
-  left: 20px;
+  left: calc(50% - (var(--track-width) / 2) - 16px);
+  transform: translateX(-100%);
   font-size: 24px;
 }
 
