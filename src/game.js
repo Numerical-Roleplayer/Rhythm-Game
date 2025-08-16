@@ -1,5 +1,6 @@
 const game = document.getElementById('game');
-const scoreDisplay = document.getElementById('score');
+const scoreDisplay = document.getElementById('score-display');
+const multiplierDisplay = document.getElementById('multiplier-display');
 const laneContainer = document.getElementById('lane-container');
 const feedback = document.getElementById('feedback');
 const startScreen = document.getElementById('start-screen');
@@ -37,10 +38,18 @@ const BASE_POINTS = {
   Wavering: 26
 };
 
+let lastMultiplier = 1;
 function updateMultiplierFromStreak() {
-  // 0-9 -> x1, 10-19 -> x2, ... 50+ -> x6
-  multiplier = 1 + Math.min(5, Math.floor(streak / STREAK_STEP));
-}
+  const before = multiplier;
+  multiplier = 1 + Math.min(5, Math.floor(streak / STREAK_STEP)); // 0–9: x1 … 50+: x6
+  if (multiplier !== before) {
+    // trigger the badge bloom
+    multiplierDisplay.classList.remove('bump'); // restart animation
+    void multiplierDisplay.offsetWidth;
+    multiplierDisplay.classList.add('bump');
+    lastMultiplier = multiplier;
+  }
+  }
 
 
 const travelDuration = 1300;
@@ -344,7 +353,8 @@ function endGame() {
 }
 
 function updateScore() {
-  scoreDisplay.textContent = `Score: ${score} (x${multiplier} • Streak: ${streak})`;
+  document.getElementById('score-value').textContent = score;
+  multiplierDisplay.textContent = `x${multiplier}`;
 }
 
 function showFeedback(text, timing) {

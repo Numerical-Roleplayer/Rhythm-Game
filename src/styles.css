@@ -17,6 +17,11 @@ body {
   overflow: hidden;
 }
 
+.charm-regular {
+  font-family: 'Charm', cursive;
+  font-weight: 400;
+}
+
 #game {
   position: relative;
   width: 100vw;
@@ -179,12 +184,30 @@ body {
   }
 }
 
-#score {
+#score-display {
   position: absolute;
-  top: 20px;
-  left: 20px;
+  bottom: 20px;
+  left: calc(50% - (var(--track-width) / 2) - 16px);
+  transform: translateX(-100%);
   font-size: 24px;
-  color: #D4AF37;
+}
+
+#multiplier-display {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  
 }
 .feedback-text {
   position: absolute; /* relative to #game */
