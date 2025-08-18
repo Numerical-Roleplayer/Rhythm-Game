@@ -1,18 +1,14 @@
 import GameState from './state/gameState.js';
 import { spawnNote, spawnHoldNote } from './notes/noteManager.js';
 import { initControls, removeControls } from './input/controls.js';
+import timingDefaults from './config/timing.js';
+import scoringDefaults from './config/scoring.js';
 
 const laneKeys = ['d', 'f', 'j', 'k'];
 const KEY_MAP = { d: 0, f: 1, j: 2, k: 3 };
-const STREAK_STEP = 10;
-const BASE_POINTS = {
-  Poised: 36,
-  Balanced: 30,
-  Wavering: 26,
-};
 
 export default class Game {
-  constructor() {
+  constructor({ timing = {}, scoring = {} } = {}) {
     this.game = document.getElementById('game');
     this.scoreDisplay = document.getElementById('score-value');
     this.multiplierDisplay = document.getElementById('multiplier-display');
@@ -26,12 +22,21 @@ export default class Game {
 
     this.state = new GameState();
     this.lanes = [[], [], [], []];
-    this.travelDuration = 1300;
+
+    this.timing = { ...timingDefaults, ...timing };
+    this.scoring = { ...scoringDefaults, ...scoring };
+
+    this.travelDuration = this.timing.travelDuration;
+    this.POISED_WINDOW = this.timing.POISED_WINDOW;
+    this.BALANCED_WINDOW = this.timing.BALANCED_WINDOW;
+    this.WAVERING_WINDOW = this.timing.WAVERING_WINDOW;
+    this.LATE_WINDOW = this.timing.LATE_WINDOW;
+
+    this.STREAK_STEP = this.scoring.STREAK_STEP;
+    this.MULT_MAX = this.scoring.MULT_MAX;
+    this.BASE_POINTS = this.scoring.BASE_POINTS;
+
     this.songDuration = 30000;
-    this.POISED_WINDOW = 25;
-    this.BALANCED_WINDOW = 75;
-    this.WAVERING_WINDOW = 125;
-    this.LATE_WINDOW = 150;
     this.hitY = 0;
     this.noteInterval = null;
     this.gameTimeout = null;
@@ -64,7 +69,8 @@ export default class Game {
 
   updateMultiplierFromStreak() {
     const before = this.state.getMultiplier();
-    const mult = 1 + Math.min(5, Math.floor(this.state.getStreak() / STREAK_STEP));
+    const mult =
+      1 + Math.min(this.MULT_MAX, Math.floor(this.state.getStreak() / this.STREAK_STEP));
     if (mult !== before) {
       this.multiplierDisplay.classList.remove('bump');
       void this.multiplierDisplay.offsetWidth;
@@ -111,7 +117,7 @@ export default class Game {
 
     this.state.incrementStreak();
     this.updateMultiplierFromStreak();
-    this.state.addScore(BASE_POINTS[accuracy] * this.state.getMultiplier());
+    this.state.addScore(this.BASE_POINTS[accuracy] * this.state.getMultiplier());
     this.state.incrementAccuracy(accuracy);
 
     clearTimeout(note.lapseTimer);
