@@ -1,370 +1,255 @@
-const game = document.getElementById('game');
-const scoreDisplay = document.getElementById('score-display');
-const multiplierDisplay = document.getElementById('multiplier-display');
-const laneContainer = document.getElementById('lane-container');
-const feedback = document.getElementById('feedback');
-const startScreen = document.getElementById('start-screen');
-const startButton = document.getElementById('start-button');
-const gameOverScreen = document.getElementById('game-over');
-const restartButton = document.getElementById('restart-button');
-const finalScore = document.getElementById('final-score');
+import GameState from './state/gameState.js';
+import { spawnNote, spawnHoldNote } from './notes/noteManager.js';
+import { initControls, removeControls } from './input/controls.js';
 
 const laneKeys = ['d', 'f', 'j', 'k'];
 const KEY_MAP = { d: 0, f: 1, j: 2, k: 3 };
-const lanes = [[], [], [], []];
-
-let holdActive = false;
-
-let score = 0;
-let noteInterval = null;
-let gameTimeout = null;
-const songDuration = 30000; // duration placeholder in ms
-
-const POISED_WINDOW = 25;
-const BALANCED_WINDOW = 75;
-const WAVERING_WINDOW = 125;
-const LATE_WINDOW = 150;
-
-// Streak-based multiplier scoring
-const MULT_MAX = 6;
-const STREAK_STEP = 10; // every 10 hits -> next multiplier
-let streak = 0;
-let multiplier = 1;
-
-// Base values per tier
+const STREAK_STEP = 10;
 const BASE_POINTS = {
   Poised: 36,
   Balanced: 30,
-  Wavering: 26
+  Wavering: 26,
 };
 
-let lastMultiplier = 1;
-function updateMultiplierFromStreak() {
-  const before = multiplier;
-  multiplier = 1 + Math.min(5, Math.floor(streak / STREAK_STEP)); // 0–9: x1 … 50+: x6
-  if (multiplier !== before) {
-    // trigger the badge bloom
-    multiplierDisplay.classList.remove('bump'); // restart animation
-    void multiplierDisplay.offsetWidth;
-    multiplierDisplay.classList.add('bump');
-    lastMultiplier = multiplier;
-  }
-  }
+export default class Game {
+  constructor() {
+    this.game = document.getElementById('game');
+    this.scoreDisplay = document.getElementById('score-value');
+    this.multiplierDisplay = document.getElementById('multiplier-display');
+    this.laneContainer = document.getElementById('lane-container');
+    this.feedback = document.getElementById('feedback');
+    this.startScreen = document.getElementById('start-screen');
+    this.startButton = document.getElementById('start-button');
+    this.gameOverScreen = document.getElementById('game-over');
+    this.restartButton = document.getElementById('restart-button');
+    this.finalScore = document.getElementById('final-score');
 
+    this.state = new GameState();
+    this.lanes = [[], [], [], []];
+    this.travelDuration = 1300;
+    this.songDuration = 30000;
+    this.POISED_WINDOW = 25;
+    this.BALANCED_WINDOW = 75;
+    this.WAVERING_WINDOW = 125;
+    this.LATE_WINDOW = 150;
+    this.hitY = 0;
+    this.noteInterval = null;
+    this.gameTimeout = null;
+    this.holdActive = false;
 
-const travelDuration = 1300;
-let hitY = 0;
+    this.computeDimensions = this.computeDimensions.bind(this);
+    window.addEventListener('resize', this.computeDimensions);
 
-function computeDimensions() {
-  hitY = laneContainer.clientHeight - 20;
-}
+    laneKeys.forEach((key, index) => {
+      const lane = document.createElement('div');
+      lane.classList.add('lane', `lane-${index}`);
+      this.laneContainer.appendChild(lane);
 
-window.addEventListener('resize', computeDimensions);
+      const indicator = document.createElement('div');
+      indicator.className = 'hit-indicator';
+      lane.appendChild(indicator);
 
-if (import.meta.env.DEV) {
-  console.log("Initializing game with travelDuration:", travelDuration);
-}
-
-laneKeys.forEach((key, index) => {
-  const lane = document.createElement('div');
-  lane.classList.add('lane', `lane-${index}`);
-  laneContainer.appendChild(lane);
-
-  const indicator = document.createElement('div');
-  indicator.className = 'hit-indicator';
-  lane.appendChild(indicator);
-
-  const flash = document.createElement('div');
-  flash.className = 'hit-flash';
-  lane.appendChild(flash);
-});
-
-function triggerFlash(laneIndex) {
-  const flash = document.querySelectorAll('.hit-flash')[laneIndex];
-  const laneEl = laneContainer.children[laneIndex];
-
-  // Restart flash and sweep animations on every hit
-  flash.classList.remove('active');
-  laneEl.classList.remove('sweep');
-  // Force reflow to allow animations to retrigger
-  void flash.offsetWidth;
-
-  flash.classList.add('active');
-  laneEl.classList.add('sweep');
-
-  // Clear classes after animations complete
-  setTimeout(() => flash.classList.remove('active'), 200);
-  setTimeout(() => laneEl.classList.remove('sweep'), 240);
-}
-
-function spawnNote(laneIndex) {
-  const el = document.createElement('div');
-  const laneKey = laneKeys[laneIndex];
-  el.className = `note ${laneKey}`;
-  laneContainer.children[laneIndex].appendChild(el);
-
-  const hitTime = performance.now() + travelDuration;
-  const noteObj = { el, hitTime, type: 'normal' };
-  lanes[laneIndex].push(noteObj);
-
-  const lapseDelay = hitTime + LATE_WINDOW - performance.now();
-  noteObj.lapseTimer = setTimeout(() => handleLapse(laneIndex, noteObj), lapseDelay);
-
-  const spawnTime = performance.now();
-  function animate() {
-    const now = performance.now();
-    const progress = Math.min((now - spawnTime) / travelDuration, 1);
-    const y = progress * (hitY + 40);
-    el.style.top = `${y - 40}px`;
-    if (!el.isConnected) return;
-    if (progress < 1) {
-      requestAnimationFrame(animate);
-    } else {
-    // Option A: hide immediately at the hit line, but keep it hittable
-    // (late hits still work until LATE_WINDOW elapses & handleLapse runs)
-    el.style.opacity = '0';
-    el.style.pointerEvents = 'none';
-    }
-  }
-
-  requestAnimationFrame(animate);
-}
-
-function spawnHoldNote(laneIndex, holdDuration) {
-  const el = document.createElement('div');
-  const laneKey = laneKeys[laneIndex];
-  el.className = 'hold';
-
-  const head = document.createElement('div');
-  head.className = `hold-head note ${laneKey}`;
-  el.appendChild(head);
-
-  const tail = document.createElement('div');
-  tail.className = `hold-tail ${laneKey}`;
-  el.appendChild(tail);
-
-  laneContainer.children[laneIndex].appendChild(el);
-
-  const distance = hitY + 40;
-  const tailHeight = holdDuration * distance / travelDuration;
-  tail.style.height = `${tailHeight}px`;
-  el.style.height = `${tailHeight + 20}px`;
-
-  const spawnTime = performance.now();
-  const hitTime = spawnTime + travelDuration;
-  const releaseTime = hitTime + holdDuration;
-
-  const noteObj = {
-    el,
-    hitTime,
-    releaseTime,
-    type: 'hold',
-    headEl: head,
-    tailEl: tail,
-    tailHeight,
-    holding: false,
-    animFrame: null,
-  };
-  lanes[laneIndex].push(noteObj);
-
-  const lapseDelay = hitTime + LATE_WINDOW - performance.now();
-  noteObj.lapseTimer = setTimeout(() => handleLapse(laneIndex, noteObj), lapseDelay);
-
-  const totalDuration = travelDuration + holdDuration;
-  const startTop = -40 - tailHeight;
-  const totalDistance = hitY + 40 + tailHeight;
-  function animate() {
-    if (noteObj.holding) return;
-    const now = performance.now();
-    const progress = Math.min((now - spawnTime) / totalDuration, 1);
-    const y = startTop + progress * totalDistance;
-    el.style.top = `${y}px`;
-    if (!el.isConnected) return;
-    if (progress < 1) {
-      noteObj.animFrame = requestAnimationFrame(animate);
-    } else {
-      el.style.opacity = '0';
-      el.style.pointerEvents = 'none';
-    }
-  }
-
-  noteObj.animFrame = requestAnimationFrame(animate);
-}
-
-function handleKeyDown(e) {
-  const key = e.key.toLowerCase();
-  const laneIndex = KEY_MAP[key];
-  if (laneIndex === undefined) return;
-
-  const note = lanes[laneIndex][0];
-  if (!note) return;
-
-  const diff = performance.now() - note.hitTime;
-  if (diff < -LATE_WINDOW || diff > LATE_WINDOW) return;
-
-  let accuracy;
-  const absDiff = Math.abs(diff);
-  if (absDiff <= POISED_WINDOW) {
-    accuracy = 'Poised';
-  } else if (absDiff <= BALANCED_WINDOW) {
-    accuracy = 'Balanced';
-  } else if (absDiff <= WAVERING_WINDOW) {
-    accuracy = 'Wavering';
-  } else {
-    handleLapse(laneIndex, note);
-    return;
-  }
-
-  streak++;
-  updateMultiplierFromStreak();
-  score += BASE_POINTS[accuracy] * multiplier;
-  clearTimeout(note.lapseTimer);
-  if (note.type === 'hold') {
-    if (note.holding) return;
-    note.holding = true;
-    if (note.animFrame) cancelAnimationFrame(note.animFrame);
-    const remaining = note.releaseTime - performance.now();
-    const tailHeight = note.tailHeight;
-    note.el.style.top = `${hitY - tailHeight}px`;
-    note.tailEl.style.transition = `height ${remaining}ms linear`;
-    note.tailEl.style.height = '0px';
-    note.holdTimer = setTimeout(() => completeHold(laneIndex, note), remaining);
-    // Shimmer ON: tail ribbon + holder glitter
-    note.el.classList.add('holding');
-    laneContainer.children[laneIndex].querySelector('.hit-indicator').classList.add('sustaining');
-    triggerFlash(laneIndex);
-    showFeedback(accuracy, diff < 0 ? 'Early' : 'Late');
-    updateScore();
-  } else {
-    note.el.remove();
-    lanes[laneIndex].shift();
-    triggerFlash(laneIndex);
-    showFeedback(accuracy, diff < 0 ? 'Early' : 'Late');
-    updateScore();
-  }
-}
-
-function handleKeyUp(e) {
-  const key = e.key.toLowerCase();
-  const laneIndex = KEY_MAP[key];
-  if (laneIndex === undefined) return;
-  const note = lanes[laneIndex][0];
-  if (!note || note.type !== 'hold' || !note.holding) return;
-  if (performance.now() < note.releaseTime) {
-    clearTimeout(note.holdTimer);
-    handleLapse(laneIndex, note, true);
-  }
-}
-
-function completeHold(laneIndex, noteObj) {
-  const queue = lanes[laneIndex];
-  if (queue[0] === noteObj) {
-    queue.shift();
-  } else {
-    const idx = queue.indexOf(noteObj);
-    if (idx !== -1) queue.splice(idx, 1);
-  }
-  if (noteObj.holdTimer) clearTimeout(noteObj.holdTimer);
-  noteObj.el.remove();
-  const indicator = laneContainer.children[laneIndex].querySelector('.hit-indicator');
-  if (indicator) indicator.classList.remove('sustaining');
-  holdActive = false;
-}
-
-function handleLapse(laneIndex, noteObj, suppressFeedback = false, isEarlyRelease = false) {
-  const queue = lanes[laneIndex];
-  const idx = queue.indexOf(noteObj);
-  if (idx === -1) return;
-
-  queue.splice(idx, 1);
-  if (noteObj.missTimer) clearTimeout(noteObj.missTimer);
-  if (noteObj.holdTimer) clearTimeout(noteObj.holdTimer);
-
-  // Shimmer OFF
-  noteObj.el.classList.remove('holding');
-  const indicator = laneContainer.children[laneIndex].querySelector('.hit-indicator');
-  if (indicator) indicator.classList.remove('sustaining');
-
-  noteObj.el.remove();
-
-  if (noteObj.type === 'hold') holdActive = false;
-
-  // Only reset streak on a real miss (not early release cleanup)
-  if (!isEarlyRelease) {
-    streak = 0;
-    multiplier = 1;
-  }
-
-  if (!suppressFeedback && !isEarlyRelease) showFeedback('Lapse');
-  updateScore();
-}
-
-
-function startGame() {
-  stopGame();
-  score = 0;
-  streak = 0;
-  multiplier = 1;
-
-  updateScore();
-  startScreen.style.display = 'none';
-  gameOverScreen.style.display = 'none';
-  game.style.display = 'block';
-  requestAnimationFrame(computeDimensions);
-  window.addEventListener('keydown', handleKeyDown);
-  window.addEventListener('keyup', handleKeyUp);
-  noteInterval = setInterval(() => {
-    if (holdActive) return;
-    const lane = Math.floor(Math.random() * 4);
-    if (Math.random() < 0.1) {
-      const duration = 800 + Math.random() * 800;
-      spawnHoldNote(lane, duration);
-      holdActive = true;
-    } else {
-      spawnNote(lane);
-    }
-  }, 800);
-  gameTimeout = setTimeout(endGame, songDuration);
-}
-
-function stopGame() {
-  clearInterval(noteInterval);
-  clearTimeout(gameTimeout);
-  window.removeEventListener('keydown', handleKeyDown);
-  window.removeEventListener('keyup', handleKeyUp);
-  noteInterval = null;
-  gameTimeout = null;
-  document.querySelectorAll('.note, .hold').forEach(n => n.remove());
-  lanes.forEach(l => {
-    l.forEach(n => {
-      clearTimeout(n.lapseTimer);
-      if (n.holdTimer) clearTimeout(n.holdTimer);
+      const flash = document.createElement('div');
+      flash.className = 'hit-flash';
+      lane.appendChild(flash);
     });
-    l.length = 0;
-  });
-  holdActive = false;
-}
 
-function endGame() {
-  stopGame();
-  finalScore.textContent = `Final Score: ${score}`;
-  game.style.display = 'none';
-  gameOverScreen.style.display = 'flex';
-}
+    this.startButton.addEventListener('click', () => this.start());
+    this.restartButton.addEventListener('click', () => this.start());
+  }
 
-function updateScore() {
-  document.getElementById('score-value').textContent = score;
-  multiplierDisplay.textContent = `x${multiplier}`;
-}
+  computeDimensions() {
+    this.hitY = this.laneContainer.clientHeight - 20;
+  }
 
-function showFeedback(text, timing) {
-  feedback.textContent = timing ? `${text} - ${timing}` : text;
-  feedback.style.opacity = '1';
-  clearTimeout(feedback.timeout);
-  feedback.timeout = setTimeout(() => {
-    feedback.style.opacity = '0';
-  }, 600);
-}
+  updateMultiplierFromStreak() {
+    const before = this.state.getMultiplier();
+    const mult = 1 + Math.min(5, Math.floor(this.state.getStreak() / STREAK_STEP));
+    if (mult !== before) {
+      this.multiplierDisplay.classList.remove('bump');
+      void this.multiplierDisplay.offsetWidth;
+      this.multiplierDisplay.classList.add('bump');
+    }
+    this.state.setMultiplier(mult);
+  }
 
-startButton.addEventListener('click', startGame);
-restartButton.addEventListener('click', startGame);
+  triggerFlash(laneIndex) {
+    const flash = document.querySelectorAll('.hit-flash')[laneIndex];
+    const laneEl = this.laneContainer.children[laneIndex];
+    flash.classList.remove('active');
+    laneEl.classList.remove('sweep');
+    void flash.offsetWidth;
+    flash.classList.add('active');
+    laneEl.classList.add('sweep');
+    setTimeout(() => flash.classList.remove('active'), 200);
+    setTimeout(() => laneEl.classList.remove('sweep'), 240);
+  }
+
+  handleKeyDown(e) {
+    const key = e.key.toLowerCase();
+    const laneIndex = KEY_MAP[key];
+    if (laneIndex === undefined) return;
+
+    const note = this.lanes[laneIndex][0];
+    if (!note) return;
+
+    const diff = performance.now() - note.hitTime;
+    if (diff < -this.LATE_WINDOW || diff > this.LATE_WINDOW) return;
+
+    let accuracy;
+    const absDiff = Math.abs(diff);
+    if (absDiff <= this.POISED_WINDOW) {
+      accuracy = 'Poised';
+    } else if (absDiff <= this.BALANCED_WINDOW) {
+      accuracy = 'Balanced';
+    } else if (absDiff <= this.WAVERING_WINDOW) {
+      accuracy = 'Wavering';
+    } else {
+      this.handleLapse(laneIndex, note);
+      return;
+    }
+
+    this.state.incrementStreak();
+    this.updateMultiplierFromStreak();
+    this.state.addScore(BASE_POINTS[accuracy] * this.state.getMultiplier());
+    this.state.incrementAccuracy(accuracy);
+
+    clearTimeout(note.lapseTimer);
+    if (note.type === 'hold') {
+      if (note.holding) return;
+      note.holding = true;
+      if (note.animFrame) cancelAnimationFrame(note.animFrame);
+      const remaining = note.releaseTime - performance.now();
+      const tailHeight = note.tailHeight;
+      note.el.style.top = `${this.hitY - tailHeight}px`;
+      note.tailEl.style.transition = `height ${remaining}ms linear`;
+      note.tailEl.style.height = '0px';
+      note.holdTimer = setTimeout(() => note.completeHold(), remaining);
+      note.el.classList.add('holding');
+      this.laneContainer.children[laneIndex].querySelector('.hit-indicator').classList.add('sustaining');
+      this.triggerFlash(laneIndex);
+      this.showFeedback(accuracy, diff < 0 ? 'Early' : 'Late');
+      this.updateScore();
+    } else {
+      note.el.remove();
+      this.lanes[laneIndex].shift();
+      this.triggerFlash(laneIndex);
+      this.showFeedback(accuracy, diff < 0 ? 'Early' : 'Late');
+      this.updateScore();
+    }
+  }
+
+  handleKeyUp(e) {
+    const key = e.key.toLowerCase();
+    const laneIndex = KEY_MAP[key];
+    if (laneIndex === undefined) return;
+    const note = this.lanes[laneIndex][0];
+    if (!note || note.type !== 'hold' || !note.holding) return;
+    if (performance.now() < note.releaseTime) {
+      clearTimeout(note.holdTimer);
+      this.handleLapse(laneIndex, note, true);
+    }
+  }
+
+  handleLapse(laneIndex, noteObj, suppressFeedback = false, isEarlyRelease = false) {
+    const queue = this.lanes[laneIndex];
+    const idx = queue.indexOf(noteObj);
+    if (idx === -1) return;
+    queue.splice(idx, 1);
+    if (noteObj.missTimer) clearTimeout(noteObj.missTimer);
+    if (noteObj.holdTimer) clearTimeout(noteObj.holdTimer);
+    noteObj.el.classList.remove('holding');
+    const indicator = this.laneContainer.children[laneIndex].querySelector('.hit-indicator');
+    if (indicator) indicator.classList.remove('sustaining');
+    noteObj.el.remove();
+    if (noteObj.type === 'hold') this.holdActive = false;
+    if (!isEarlyRelease) {
+      this.state.resetStreak();
+      this.state.setMultiplier(1);
+      this.state.incrementAccuracy('Lapse');
+    }
+    if (!suppressFeedback && !isEarlyRelease) this.showFeedback('Lapse');
+    this.updateScore();
+  }
+
+  updateScore() {
+    this.scoreDisplay.textContent = this.state.getScore();
+    this.multiplierDisplay.textContent = `x${this.state.getMultiplier()}`;
+  }
+
+  showFeedback(text, timing) {
+    this.feedback.textContent = timing ? `${text} - ${timing}` : text;
+    this.feedback.style.opacity = '1';
+    clearTimeout(this.feedback.timeout);
+    this.feedback.timeout = setTimeout(() => {
+      this.feedback.style.opacity = '0';
+    }, 600);
+  }
+
+  start() {
+    this.stop();
+    this.state.setScore(0);
+    this.state.resetStreak();
+    this.state.setMultiplier(1);
+    this.state.resetAccuracy();
+    this.updateScore();
+    this.startScreen.style.display = 'none';
+    this.gameOverScreen.style.display = 'none';
+    this.game.style.display = 'block';
+    requestAnimationFrame(() => this.computeDimensions());
+    initControls(this.handleKeyDown.bind(this), this.handleKeyUp.bind(this));
+    this.noteInterval = setInterval(() => {
+      if (this.holdActive) return;
+      const lane = Math.floor(Math.random() * 4);
+      const cfg = this.noteConfig();
+      if (Math.random() < 0.1) {
+        const duration = 800 + Math.random() * 800;
+        spawnHoldNote(lane, duration, cfg);
+        this.holdActive = true;
+      } else {
+        spawnNote(lane, cfg);
+      }
+    }, 800);
+    this.gameTimeout = setTimeout(() => this.end(), this.songDuration);
+  }
+
+  noteConfig() {
+    return {
+      laneContainer: this.laneContainer,
+      laneKeys,
+      lanes: this.lanes,
+      travelDuration: this.travelDuration,
+      hitY: this.hitY,
+      LATE_WINDOW: this.LATE_WINDOW,
+      handleLapse: (laneIndex, noteObj, suppress, early) =>
+        this.handleLapse(laneIndex, noteObj, suppress, early),
+      onHoldComplete: () => {
+        this.holdActive = false;
+      },
+    };
+  }
+
+  stop() {
+    clearInterval(this.noteInterval);
+    clearTimeout(this.gameTimeout);
+    removeControls();
+    this.noteInterval = null;
+    this.gameTimeout = null;
+    document.querySelectorAll('.note, .hold').forEach((n) => n.remove());
+    this.lanes.forEach((l) => {
+      l.forEach((n) => {
+        clearTimeout(n.lapseTimer);
+        if (n.holdTimer) clearTimeout(n.holdTimer);
+      });
+      l.length = 0;
+    });
+    this.holdActive = false;
+  }
+
+  end() {
+    this.stop();
+    this.finalScore.textContent = `Final Score: ${this.state.getScore()}`;
+    this.game.style.display = 'none';
+    this.gameOverScreen.style.display = 'flex';
+  }
+}
