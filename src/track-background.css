@@ -64,14 +64,16 @@ border-radius: 14px;
 .note.d,
 .note.f,
 .note.j,
-.note.k {
+.note.k,
+.note.l {
   background-color: #F6D1D1;
 }
 
 .hold-tail.d,
 .hold-tail.f,
 .hold-tail.j,
-.hold-tail.k {
+.hold-tail.k,
+.hold-tail.l {
   background-color: #F6D1D1;
   border: 2px solid #F7A27E;
   opacity: 0.95;

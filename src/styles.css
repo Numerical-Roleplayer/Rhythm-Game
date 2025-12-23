@@ -6,9 +6,10 @@
   --playfield-height: 55vh;
   --note-offset: 0px;
   --indicator-offset: 0px;
-  --line-1: 25%;
-  --line-2: 50%;
-  --line-3: 75%;
+  --line-1: 20%;
+  --line-2: 40%;
+  --line-3: 60%;
+  --line-4: 80%;
 }
 
 body {
@@ -240,3 +241,6 @@ body {
 
 .lane-3 .note { --note-offset: 1px; }
 .lane-3 .hit-indicator { --indicator-offset: 1px; }
+
+.lane-4 .note { --note-offset: 1px; }
+.lane-4 .hit-indicator { --indicator-offset: 1px; }
