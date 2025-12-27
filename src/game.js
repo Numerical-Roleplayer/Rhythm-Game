@@ -4,8 +4,8 @@ import { initControls, removeControls } from './input/controls.js';
 import timingDefaults from './config/timing.js';
 import scoringDefaults from './config/scoring.js';
 
-const laneKeys = ['d', 'f', 'j', 'k'];
-const KEY_MAP = { d: 0, f: 1, j: 2, k: 3 };
+const laneKeys = ['d', 'f', 'j', 'k', 'l'];
+const KEY_MAP = { d: 0, f: 1, j: 2, k: 3, l: 4 };
 
 export default class Game {
   constructor({ timing = {}, scoring = {} } = {}) {
@@ -21,7 +21,7 @@ export default class Game {
     this.finalScore = document.getElementById('final-score');
 
     this.state = new GameState();
-    this.lanes = [[], [], [], []];
+    this.lanes = [[], [], [], [], []];
 
     this.timing = { ...timingDefaults, ...timing };
     this.scoring = { ...scoringDefaults, ...scoring };
@@ -206,7 +206,7 @@ export default class Game {
     initControls(this.handleKeyDown.bind(this), this.handleKeyUp.bind(this));
     this.noteInterval = setInterval(() => {
       if (this.holdActive) return;
-      const lane = Math.floor(Math.random() * 4);
+      const lane = Math.floor(Math.random() * 5);
       const cfg = this.noteConfig();
       if (Math.random() < 0.1) {
         const duration = 800 + Math.random() * 800;
