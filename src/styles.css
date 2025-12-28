@@ -15,6 +15,11 @@
   --gold-dim: rgba(212, 175, 55, 0.3); /* Faint gold for secondary lines */
   --parchment: #fdf6e3;        /* Warm white for cards */
   --blush: #F4B6B6;            /* Soft Pink/Salmon for accents */
+  /* ... existing vars ... */
+  --old-rose: #D88C9A;   /* Dusty Pink */
+  --moss-green: #556B2F; /* Sage Green */
+  --gold: #D4AF37;
+  --parchment: #fdf6e3;
   --overlay-bg: radial-gradient(circle at center, rgba(46, 58, 70, 0.95), #1a1a2e); /* Vignette */
   
   /* Layout Z-Indices */
@@ -74,15 +79,6 @@ body {
   background: var(--overlay-bg);
   animation: fadeIn 0.5s ease-in-out;
   z-index: 1000;
-}
-.overlay button {
-  padding: 10px 20px;
-  font-size: 24px;
-  border: none;
-  border-radius: 8px;
-  background-color: #5a189a;
-  color: #fff;
-  cursor: pointer;
 }
 .track {
   position: absolute;
@@ -196,26 +192,46 @@ body {
 .menu-btn {
   display: block;
   width: 100%;
-  padding: 15px 0;
+  padding: 15px 25px; /* Added horizontal padding */
   margin: 15px 0;
-  background: transparent;
-  border: 1px solid var(--gold-dim);
+  
+  /* Glassy background to let the art show through */
+  background: linear-gradient(90deg, rgba(26, 26, 46, 0.6) 0%, transparent 100%);
+  
+  /* The "Stem" - A subtle green border on the left */
+  border: 1px solid rgba(212, 175, 55, 0.2); /* Faint Gold */
+  border-left: 3px solid var(--moss-green);   /* Sage Green Accent */
+  
   color: var(--parchment);
   font-family: 'Charm', cursive;
-  font-size: 1.6rem;
+  font-size: 1.8rem; /* Slightly larger */
+  text-align: left;  /* Align text to the "stem" */
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  
+  /* Smooth transitions for the "Bloom" effect */
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .menu-btn:hover {
-  background: rgba(212, 175, 55, 0.1);
+  /* Background flushes with Old Rose */
+  background: linear-gradient(90deg, rgba(216, 140, 154, 0.25) 0%, rgba(26, 26, 46, 0.4) 100%);
+  
+  /* Borders light up */
   border-color: var(--gold);
-  text-shadow: 0 0 8px var(--gold);
-  transform: scale(1.02);
+  border-left-color: var(--old-rose); /* Stem turns pink */
+  border-left-width: 5px; /* Stem grows slightly */
+  
+  /* Text Glow */
+  text-shadow: 0 0 10px var(--old-rose), 0 0 20px var(--gold);
+  padding-left: 35px; /* Text moves slightly to the right */
+  transform: translateX(5px);
 }
 
 .menu-btn:active {
-  transform: scale(0.98);
+  transform: scale(0.98) translateX(5px);
+  background: linear-gradient(90deg, rgba(216, 140, 154, 0.4) 0%, transparent 100%);
 }
 
 .back-btn {
@@ -233,6 +249,23 @@ body {
 .back-btn:hover {
   opacity: 1;
   text-decoration: underline;
+}
+
+/* Add this to the bottom of the UI section */
+.game-logo {
+  display: block;
+  margin: 0 auto 10px auto; /* Centers the logo and adds a small gap below it */
+  max-width: 100%;          /* Prevents the logo from overflowing the frame */
+  height: auto;             /* Maintains aspect ratio */
+  width: 420px;             /* Adjust this value based on your logo's size */
+  
+  /* Adds a subtle entry animation to match the menu feel */
+  animation: logoFadeIn 0.8s ease-out;
+}
+
+@keyframes logoFadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* --- SCREEN: REPERTOIRE (Song Selection) --- */
