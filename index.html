@@ -3,49 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ballet Rhythm Game</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Charm:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Styles will be imported via JS in Vite -->
-  </head>
+  <title>Rococo in Bloom</title>
+  <link href="https://fonts.googleapis.com/css2?family=Parisienne&family=Charm:wght@400;700&display=swap" rel="stylesheet">
+</head>
 <body>
-  <div id="start-screen" class="overlay">
-    <button id="start-button">Start</button>
+
+  <div id="main-menu" class="screen overlay">
+    <div class="gilded-frame">
+      <h1 class="title-font">Rococo in Bloom</h1>
+      <div class="subtitle">Conservatoire de l’Étoile</div>
+      <nav class="menu-options">
+        <button id="btn-enter" class="menu-btn">Enter Repertoire</button>
+        <button class="menu-btn">Adjust Slippers</button>
+        <button class="menu-btn">Credits</button>
+      </nav>
+    </div>
   </div>
 
-    <div id="game">
-      <div class="track">
-        <div class="lane-line" style="--line-n: var(--line-1);"></div>
-        <div class="lane-line" style="--line-n: var(--line-2);"></div>
-        <div class="lane-line" style="--line-n: var(--line-3);"></div>
-        <div class="lane-line" style="--line-n: var(--line-4);"></div>
-        <div class="lane-container" id="lane-container"></div>
-        <div class="hit-line"></div>
-        <div id="multiplier-display" class="charm-regular">x1</div>
-      </div>
-      <div id="score-display" class="charm-regular">
-        <span class="score-label">Score:</span>
-        <span id="score-value">0</span>
-      </div>
-      <div class="feedback-text" id="feedback"></div>
+  <div id="song-select" class="screen overlay hidden">
+    <div class="repertoire-container">
+      <h2 class="section-title">Repertoire</h2>
+      <div class="cards-scroll">
+        <div class="song-card" id="card-coppelia">
+          <div class="card-header">
+            <div class="song-title">Valse de la Poupée</div>
+            <div class="composer">Léo Delibes</div>
+          </div>
+          <div class="card-body">
+            <div class="score-stamp">PB: --</div>
+          </div>
+          <div class="card-footer">
+            <div class="difficulty-icons">🩰 🩰 🩰 ⚪ ⚪</div>
+            <div class="diff-text">Étoile</div>
+          </div>
+        </div>
+        </div>
+      <button id="btn-back" class="back-btn">Return to Foyer</button>
     </div>
-
-  <div id="game-over" class="overlay" style="display: none;">
-    <div id="final-score"></div>
-    <div id="stats" style="text-align: center; margin: 20px 0;">
-      <p>Total Notes: <span id="stat-total">0</span></p>
-      <p>Hit Notes: <span id="stat-hit">0</span></p>
-      <p>Poised: <span id="stat-poised">0</span></p>
-      <p>Balanced: <span id="stat-balanced">0</span></p>
-      <p>Wavering: <span id="stat-wavering">0</span></p>
-      <p>Lapse: <span id="stat-lapse">0</span></p>
-      <p>Average Delay: <span id="stat-delay">0</span> ms</p>
-    </div>
-    <button id="restart-button">Restart</button>
   </div>
 
-    <script type="module" src="./src/main.js"></script>
-  </body>
+  <div id="game" class="hidden">
+    <div class="track">
+      <div class="lane-line" style="--line-n: var(--line-1);"></div>
+      <div class="lane-line" style="--line-n: var(--line-2);"></div>
+      <div class="lane-line" style="--line-n: var(--line-3);"></div>
+      <div class="lane-line" style="--line-n: var(--line-4);"></div>
+      <div class="lane-container" id="lane-container"></div>
+      <div class="hit-line"></div>
+      <div id="multiplier-display" class="charm-regular">x1</div>
+    </div>
+    <div id="score-display" class="charm-regular">
+      <span class="score-label">Score:</span>
+      <span id="score-value">0</span>
+    </div>
+    <div class="feedback-text" id="feedback"></div>
+  </div>
+
+  <div id="pause-menu" class="screen overlay hidden">
+    <div class="lace-overlay"></div>
+    <div class="gilded-frame">
+      <h2 class="title-font" style="font-size: 3rem;">Intermission</h2>
+      <button id="btn-resume" class="menu-btn">Resume Performance</button>
+      <button id="btn-quit" class="menu-btn">Retire to Foyer</button>
+    </div>
+  </div>
+
+  <div id="game-over" class="screen overlay hidden">
+    <div class="gilded-frame">
+        <h2 class="title-font" style="font-size: 3rem;">Performance End</h2>
+        <div id="final-score" style="font-size: 2rem; margin: 10px 0;"></div>
+        <div id="stats" style="text-align: center; margin: 20px 0; font-family: 'Charm', cursive;">
+          <p>Poised: <span id="stat-poised">0</span></p>
+          <p>Balanced: <span id="stat-balanced">0</span></p>
+          <p>Wavering: <span id="stat-wavering">0</span></p>
+          <p>Lapse: <span id="stat-lapse">0</span></p>
+        </div>
+        <button id="restart-button" class="menu-btn">Restart Variation</button>
+        <button id="btn-exit" class="menu-btn">Return to Foyer</button>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
 </html>

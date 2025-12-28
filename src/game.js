@@ -20,6 +20,19 @@ export default class Game {
     this.restartButton = document.getElementById('restart-button');
     this.finalScore = document.getElementById('final-score');
 
+    // Inside constructor()
+    this.mainMenu = document.getElementById('main-menu');
+    this.songSelect = document.getElementById('song-select');
+    this.pauseMenu = document.getElementById('pause-menu');
+
+    // Buttons
+    document.getElementById('btn-enter').onclick = () => this.showScreen('song-select');
+    document.getElementById('btn-back').onclick = () => this.showScreen('main-menu');
+    document.getElementById('card-coppelia').onclick = () => this.start();
+    document.getElementById('btn-resume').onclick = () => this.togglePause();
+    document.getElementById('btn-quit').onclick = () => this.stopAndReturn();
+    document.getElementById('btn-exit').onclick = () => this.showScreen('main-menu');
+
     this.state = new GameState();
     this.lanes = [[], [], [], [], []];
 
@@ -124,6 +137,27 @@ export default class Game {
     });
   }
 
+  showScreen(screenId) {
+    // Hide everything
+    this.mainMenu.classList.add('hidden');
+    this.songSelect.classList.add('hidden');
+    this.game.classList.add('hidden');
+    this.pauseMenu.classList.add('hidden');
+    this.gameOverScreen.classList.add('hidden');
+
+    // Show target
+    const target = document.getElementById(screenId);
+    if (target) target.classList.remove('hidden');
+  
+    // Custom logic for game start
+    if (screenId === 'game') this.game.style.display = 'block';
+  }
+
+  stopAndReturn() {
+    this.stop();
+    this.showScreen('main-menu');
+  }
+
   checkLapses(timeSinceStart) {
     this.lanes.forEach((lane, laneIndex) => {
       const note = lane[0];
@@ -138,24 +172,26 @@ export default class Game {
 
   togglePause() {
     if (this.isEnding) return;
-
     this.isPaused = !this.isPaused;
 
     if (this.isPaused) {
       this.audio.pause();
       this.pauseStartTime = performance.now();
-      this.feedback.textContent = 'PAUSED';
-      this.feedback.style.opacity = '1';
+      // Show the new Pause Menu
+      this.pauseMenu.classList.remove('hidden');
       this.pauseActiveHoldTimers();
-      return;
+    } else {
+      const duration = performance.now() - this.pauseStartTime;
+      this.totalPausedTime += duration;
+    
+      // Hide the Pause Menu
+      this.pauseMenu.classList.add('hidden');
+    
+      this.resumeActiveHoldTimers();
+      this.audio.play();
+      this.update();
+      
     }
-
-    const duration = performance.now() - this.pauseStartTime;
-    this.totalPausedTime += duration;
-    this.feedback.style.opacity = '0';
-    this.resumeActiveHoldTimers();
-    this.audio.play();
-    this.update();
   }
 
   updateMultiplierFromStreak() {
@@ -285,37 +321,49 @@ export default class Game {
   }
 
   async start() {
-    this.stop();
-    this.isPaused = false;
-    this.pauseStartTime = 0;
-    this.totalPausedTime = 0;
-    this.isEnding = false;
-    this.state.setScore(0);
-    this.state.resetStreak();
-    this.state.setMultiplier(1);
-    this.state.resetAccuracy();
-    this.state.totalDelay = 0;
-    this.state.hitCount = 0;
-    this.updateScore();
-    this.startScreen.style.display = 'none';
-    this.gameOverScreen.style.display = 'none';
-    this.game.style.display = 'block';
-    requestAnimationFrame(() => this.computeDimensions());
-    initControls(this.handleKeyDown.bind(this), this.handleKeyUp.bind(this), () =>
-      this.togglePause(),
-    );
-    this.audio.pause();
-    this.audio.currentTime = 0;
+      this.stop();
+      this.isPaused = false;
+      this.pauseStartTime = 0;
+      this.totalPausedTime = 0;
+      this.isEnding = false;
+    
+      // Reset Game State
+      this.state.setScore(0);
+      this.state.resetStreak();
+      this.state.setMultiplier(1);
+      this.state.resetAccuracy();
+      this.state.totalDelay = 0;
+      this.state.hitCount = 0;
+      this.updateScore();
 
-    try {
-      const response = await fetch('/songs/Coppélia-Valse_de_la_poupee.json');
-      if (!response.ok) throw new Error('Failed to load chart');
-      this.chart = await response.json();
-      this.startGameLoop();
-    } catch (err) {
-      console.error(err);
-      this.showFeedback('Failed to load chart');
-    }
+      // NEW: Transition to the Game screen using the UI helper
+      this.showScreen('game');
+
+      // Ensure dimensions are correct for the track
+      requestAnimationFrame(() => this.computeDimensions());
+
+      // Initialize controls with the pause callback
+      initControls(
+        this.handleKeyDown.bind(this), 
+        this.handleKeyUp.bind(this), 
+        () => this.togglePause()
+      );
+
+      // Reset Audio
+      this.audio.pause();
+      this.audio.currentTime = 0;
+
+      try {
+        // Load the selected chart
+        const response = await fetch('/songs/Coppélia-Valse_de_la_poupee.json');
+        if (!response.ok) throw new Error('Failed to load chart');
+      
+        this.chart = await response.json();
+        this.startGameLoop();
+      } catch (err) {
+        console.error(err);
+        this.showFeedback('Failed to load chart');
+      }
   }
 
   noteConfig() {
@@ -397,24 +445,17 @@ export default class Game {
 
   end() {
     this.stop();
-    const totalEl = document.getElementById('stat-total');
-    const hitEl = document.getElementById('stat-hit');
-    const poisedEl = document.getElementById('stat-poised');
-    const balancedEl = document.getElementById('stat-balanced');
-    const waveringEl = document.getElementById('stat-wavering');
-    const lapseEl = document.getElementById('stat-lapse');
-    const delayEl = document.getElementById('stat-delay');
-    const accuracy = this.state.getAccuracy();
-    if (totalEl) totalEl.textContent = this.state.getTotalNotes();
-    if (hitEl) hitEl.textContent = this.state.hitCount;
-    if (poisedEl) poisedEl.textContent = accuracy.Poised;
-    if (balancedEl) balancedEl.textContent = accuracy.Balanced;
-    if (waveringEl) waveringEl.textContent = accuracy.Wavering;
-    if (lapseEl) lapseEl.textContent = accuracy.Lapse;
-    if (delayEl) delayEl.textContent = `${this.state.getAverageDelay().toFixed(1)} ms`;
     this.updateScore();
     this.finalScore.textContent = `Final Score: ${this.state.getScore()}`;
-    this.game.style.display = 'none';
-    this.gameOverScreen.style.display = 'flex';
+
+    // Populate the specific stats from Phase 1
+    const stats = this.state.getAccuracy();
+    document.getElementById('stat-poised').textContent = stats.Poised;
+    document.getElementById('stat-balanced').textContent = stats.Balanced;
+    document.getElementById('stat-wavering').textContent = stats.Wavering;
+    document.getElementById('stat-lapse').textContent = stats.Lapse;
+
+    // Show the End Screen
+    this.showScreen('game-over');
   }
 }
