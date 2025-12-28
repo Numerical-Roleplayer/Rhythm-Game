@@ -28,7 +28,12 @@ export default class Game {
     this.chartIndex = 0;
     this.startTime = 0;
     this.isPlaying = false;
+    this.isPaused = false;
+    this.pauseStartTime = 0;
+    this.totalPausedTime = 0;
     this.LEAD_IN = 2000;
+    this.LEAD_OUT = 2000;
+    this.isEnding = false;
     this.animationFrame = null;
 
     this.timing = { ...timingDefaults, ...timing };
@@ -71,6 +76,26 @@ export default class Game {
 
   computeDimensions() {
     this.hitY = this.laneContainer.clientHeight - 20;
+  }
+
+  togglePause() {
+    if (this.isEnding) return;
+
+    this.isPaused = !this.isPaused;
+
+    if (this.isPaused) {
+      this.audio.pause();
+      this.pauseStartTime = performance.now();
+      this.feedback.textContent = 'PAUSED';
+      this.feedback.style.opacity = '1';
+      return;
+    }
+
+    const duration = performance.now() - this.pauseStartTime;
+    this.totalPausedTime += duration;
+    this.feedback.style.opacity = '0';
+    this.audio.play();
+    this.update();
   }
 
   updateMultiplierFromStreak() {
@@ -200,6 +225,10 @@ export default class Game {
 
   async start() {
     this.stop();
+    this.isPaused = false;
+    this.pauseStartTime = 0;
+    this.totalPausedTime = 0;
+    this.isEnding = false;
     this.state.setScore(0);
     this.state.resetStreak();
     this.state.setMultiplier(1);
@@ -209,7 +238,9 @@ export default class Game {
     this.gameOverScreen.style.display = 'none';
     this.game.style.display = 'block';
     requestAnimationFrame(() => this.computeDimensions());
-    initControls(this.handleKeyDown.bind(this), this.handleKeyUp.bind(this));
+    initControls(this.handleKeyDown.bind(this), this.handleKeyUp.bind(this), () =>
+      this.togglePause(),
+    );
     this.audio.pause();
     this.audio.currentTime = 0;
 
@@ -249,9 +280,10 @@ export default class Game {
   }
 
   update() {
+    if (this.isPaused) return;
     if (!this.isPlaying) return;
 
-    let timeSinceStart = performance.now() - this.startTime;
+    let timeSinceStart = performance.now() - this.startTime - this.totalPausedTime;
     if (this.audio.currentTime > 0) {
       timeSinceStart = this.audio.currentTime * 1000;
     }
@@ -273,9 +305,13 @@ export default class Game {
       }
     }
 
-    if (this.chartIndex >= this.chart.length && this.lanes.every((lane) => lane.length === 0)) {
-      this.end();
-      return;
+    if (
+      this.chartIndex >= this.chart.length &&
+      this.lanes.every((lane) => lane.length === 0) &&
+      !this.isEnding
+    ) {
+      this.isEnding = true;
+      setTimeout(() => this.end(), this.LEAD_OUT);
     }
 
     this.animationFrame = requestAnimationFrame(() => this.update());
