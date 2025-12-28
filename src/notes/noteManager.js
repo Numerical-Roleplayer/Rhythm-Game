@@ -21,8 +21,7 @@ export function spawnNote(laneIndex, opts) {
     lanes,
     travelDuration,
     hitY,
-    LATE_WINDOW,
-    handleLapse,
+    targetHitTime = null,
     getIsPaused = () => false,
   } = opts;
   const el = document.createElement('div');
@@ -31,11 +30,8 @@ export function spawnNote(laneIndex, opts) {
   laneContainer.children[laneIndex].appendChild(el);
 
   const hitTime = performance.now() + travelDuration;
-  const noteObj = { el, hitTime, type: 'normal' };
+  const noteObj = { el, hitTime, chartTime: targetHitTime, type: 'normal' };
   lanes[laneIndex].push(noteObj);
-
-  const lapseDelay = hitTime + LATE_WINDOW - performance.now();
-  noteObj.lapseTimer = setTimeout(() => handleLapse(laneIndex, noteObj), lapseDelay);
 
   const spawnTime = performance.now();
   let lastTime = spawnTime;
@@ -75,9 +71,8 @@ export function spawnHoldNote(laneIndex, holdDuration, opts) {
     lanes,
     travelDuration,
     hitY,
-    LATE_WINDOW,
-    handleLapse,
     onHoldComplete,
+    targetHitTime = null,
     getIsPaused = () => false,
   } = opts;
   const el = document.createElement('div');
@@ -108,6 +103,7 @@ export function spawnHoldNote(laneIndex, holdDuration, opts) {
   const noteObj = {
     el,
     hitTime,
+    chartTime: targetHitTime,
     releaseTime,
     type: 'hold',
     headEl: head,
@@ -118,9 +114,6 @@ export function spawnHoldNote(laneIndex, holdDuration, opts) {
     animFrame: null,
   };
   lanes[laneIndex].push(noteObj);
-
-  const lapseDelay = hitTime + LATE_WINDOW - performance.now();
-  noteObj.lapseTimer = setTimeout(() => handleLapse(laneIndex, noteObj), lapseDelay);
 
   const totalDuration = travelDuration + holdDuration;
   const startTop = -40 - tailHeight;

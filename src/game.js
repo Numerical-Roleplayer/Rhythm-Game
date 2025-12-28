@@ -78,6 +78,14 @@ export default class Game {
     this.hitY = this.laneContainer.clientHeight - 20;
   }
 
+  getCurrentSongTime() {
+    let timeSinceStart = performance.now() - this.startTime - this.totalPausedTime;
+    if (this.audio.currentTime > 0) {
+      timeSinceStart = this.audio.currentTime * 1000;
+    }
+    return timeSinceStart;
+  }
+
   pauseActiveHoldTimers() {
     this.lanes.forEach((lane) => {
       lane.forEach((note) => {
@@ -113,6 +121,18 @@ export default class Game {
         note.holdTimer = setTimeout(() => note.completeHold(), remaining);
         note.remainingHoldDuration = null;
       });
+    });
+  }
+
+  checkLapses(timeSinceStart) {
+    this.lanes.forEach((lane, laneIndex) => {
+      const note = lane[0];
+      if (!note) return;
+      if (note.type === 'hold' && note.holding) return;
+      const targetTime = note.chartTime ?? note.hitTime;
+      if (timeSinceStart > targetTime + this.LATE_WINDOW) {
+        this.handleLapse(laneIndex, note);
+      }
     });
   }
 
@@ -170,7 +190,9 @@ export default class Game {
     const note = this.lanes[laneIndex][0];
     if (!note) return;
 
-    const diff = performance.now() - note.hitTime;
+    const currentSongTime = this.getCurrentSongTime();
+    const targetTime = note.chartTime ?? note.hitTime;
+    const diff = currentSongTime - targetTime;
     if (diff < -this.LATE_WINDOW || diff > this.LATE_WINDOW) return;
 
     let accuracy;
@@ -190,8 +212,8 @@ export default class Game {
     this.updateMultiplierFromStreak();
     this.state.addScore(this.BASE_POINTS[accuracy] * this.state.getMultiplier());
     this.state.incrementAccuracy(accuracy);
+    this.state.recordHit(diff);
 
-    clearTimeout(note.lapseTimer);
     if (note.type === 'hold') {
       if (note.holding) return;
       note.holding = true;
@@ -233,7 +255,6 @@ export default class Game {
     const idx = queue.indexOf(noteObj);
     if (idx === -1) return;
     queue.splice(idx, 1);
-    if (noteObj.missTimer) clearTimeout(noteObj.missTimer);
     if (noteObj.holdTimer) clearTimeout(noteObj.holdTimer);
     noteObj.el.classList.remove('holding');
     const indicator = this.laneContainer.children[laneIndex].querySelector('.hit-indicator');
@@ -273,6 +294,8 @@ export default class Game {
     this.state.resetStreak();
     this.state.setMultiplier(1);
     this.state.resetAccuracy();
+    this.state.totalDelay = 0;
+    this.state.hitCount = 0;
     this.updateScore();
     this.startScreen.style.display = 'none';
     this.gameOverScreen.style.display = 'none';
@@ -302,9 +325,6 @@ export default class Game {
       lanes: this.lanes,
       travelDuration: this.travelDuration,
       hitY: this.hitY,
-      LATE_WINDOW: this.LATE_WINDOW,
-      handleLapse: (laneIndex, noteObj, suppress, early) =>
-        this.handleLapse(laneIndex, noteObj, suppress, early),
       onHoldComplete: () => {
         this.holdActive = false;
       },
@@ -324,10 +344,7 @@ export default class Game {
     if (this.isPaused) return;
     if (!this.isPlaying) return;
 
-    let timeSinceStart = performance.now() - this.startTime - this.totalPausedTime;
-    if (this.audio.currentTime > 0) {
-      timeSinceStart = this.audio.currentTime * 1000;
-    }
+    const timeSinceStart = this.getCurrentSongTime();
 
     while (this.chartIndex < this.chart.length) {
       const note = this.chart[this.chartIndex];
@@ -335,16 +352,18 @@ export default class Game {
       if (timeSinceStart >= spawnTime) {
         const cfg = this.noteConfig();
         if (note.type === 'hold') {
-          spawnHoldNote(note.lane, note.duration, cfg);
+          spawnHoldNote(note.lane, note.duration, { ...cfg, targetHitTime: note.time });
           this.holdActive = true;
         } else {
-          spawnNote(note.lane, cfg);
+          spawnNote(note.lane, { ...cfg, targetHitTime: note.time });
         }
         this.chartIndex += 1;
       } else {
         break;
       }
     }
+
+    this.checkLapses(timeSinceStart);
 
     if (
       this.chartIndex >= this.chart.length &&
@@ -369,7 +388,6 @@ export default class Game {
     document.querySelectorAll('.note, .hold').forEach((n) => n.remove());
     this.lanes.forEach((l) => {
       l.forEach((n) => {
-        clearTimeout(n.lapseTimer);
         if (n.holdTimer) clearTimeout(n.holdTimer);
       });
       l.length = 0;
@@ -379,6 +397,21 @@ export default class Game {
 
   end() {
     this.stop();
+    const totalEl = document.getElementById('stat-total');
+    const hitEl = document.getElementById('stat-hit');
+    const poisedEl = document.getElementById('stat-poised');
+    const balancedEl = document.getElementById('stat-balanced');
+    const waveringEl = document.getElementById('stat-wavering');
+    const lapseEl = document.getElementById('stat-lapse');
+    const delayEl = document.getElementById('stat-delay');
+    const accuracy = this.state.getAccuracy();
+    if (totalEl) totalEl.textContent = this.state.getTotalNotes();
+    if (hitEl) hitEl.textContent = this.state.hitCount;
+    if (poisedEl) poisedEl.textContent = accuracy.Poised;
+    if (balancedEl) balancedEl.textContent = accuracy.Balanced;
+    if (waveringEl) waveringEl.textContent = accuracy.Wavering;
+    if (lapseEl) lapseEl.textContent = accuracy.Lapse;
+    if (delayEl) delayEl.textContent = `${this.state.getAverageDelay().toFixed(1)} ms`;
     this.updateScore();
     this.finalScore.textContent = `Final Score: ${this.state.getScore()}`;
     this.game.style.display = 'none';
