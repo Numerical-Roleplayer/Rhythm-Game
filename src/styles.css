@@ -170,6 +170,10 @@ body {
   
 }
 
+.paused-note {
+  transition: none !important;
+}
+
 @keyframes bloomPulse {
   0% {
     transform: translateX(-50%) scale(0.55);

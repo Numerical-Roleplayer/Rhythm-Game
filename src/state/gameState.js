@@ -3,6 +3,8 @@ export default class GameState {
     this.score = 0;
     this.streak = 0;
     this.multiplier = 1;
+    this.totalDelay = 0;
+    this.hitCount = 0;
     this.accuracy = {
       Poised: 0,
       Balanced: 0,
@@ -55,6 +57,20 @@ export default class GameState {
     if (this.accuracy[type] !== undefined) {
       this.accuracy[type] += 1;
     }
+  }
+
+  recordHit(delay) {
+    this.totalDelay += Math.abs(delay);
+    this.hitCount += 1;
+  }
+
+  getAverageDelay() {
+    if (this.hitCount === 0) return 0;
+    return this.totalDelay / this.hitCount;
+  }
+
+  getTotalNotes() {
+    return Object.values(this.accuracy).reduce((sum, val) => sum + val, 0);
   }
 
   resetAccuracy() {
