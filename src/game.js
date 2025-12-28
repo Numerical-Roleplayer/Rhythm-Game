@@ -23,6 +23,14 @@ export default class Game {
     this.state = new GameState();
     this.lanes = [[], [], [], [], []];
 
+    this.chart = [];
+    this.audio = new Audio('/songs/Coppélia-Valse_de_la_poupee.mp3');
+    this.chartIndex = 0;
+    this.startTime = 0;
+    this.isPlaying = false;
+    this.LEAD_IN = 2000;
+    this.animationFrame = null;
+
     this.timing = { ...timingDefaults, ...timing };
     this.scoring = { ...scoringDefaults, ...scoring };
 
@@ -38,8 +46,6 @@ export default class Game {
 
     this.songDuration = 30000;
     this.hitY = 0;
-    this.noteInterval = null;
-    this.gameTimeout = null;
     this.holdActive = false;
 
     this.computeDimensions = this.computeDimensions.bind(this);
@@ -192,7 +198,7 @@ export default class Game {
     }, 600);
   }
 
-  start() {
+  async start() {
     this.stop();
     this.state.setScore(0);
     this.state.resetStreak();
@@ -204,19 +210,18 @@ export default class Game {
     this.game.style.display = 'block';
     requestAnimationFrame(() => this.computeDimensions());
     initControls(this.handleKeyDown.bind(this), this.handleKeyUp.bind(this));
-    this.noteInterval = setInterval(() => {
-      if (this.holdActive) return;
-      const lane = Math.floor(Math.random() * 5);
-      const cfg = this.noteConfig();
-      if (Math.random() < 0.1) {
-        const duration = 800 + Math.random() * 800;
-        spawnHoldNote(lane, duration, cfg);
-        this.holdActive = true;
-      } else {
-        spawnNote(lane, cfg);
-      }
-    }, 800);
-    this.gameTimeout = setTimeout(() => this.end(), this.songDuration);
+    this.audio.pause();
+    this.audio.currentTime = 0;
+
+    try {
+      const response = await fetch('/songs/Coppélia-Valse_de_la_poupee.json');
+      if (!response.ok) throw new Error('Failed to load chart');
+      this.chart = await response.json();
+      this.startGameLoop();
+    } catch (err) {
+      console.error(err);
+      this.showFeedback('Failed to load chart');
+    }
   }
 
   noteConfig() {
@@ -235,12 +240,55 @@ export default class Game {
     };
   }
 
+  startGameLoop() {
+    this.chartIndex = 0;
+    this.isPlaying = true;
+    this.startTime = performance.now() + this.LEAD_IN;
+    setTimeout(() => this.audio.play(), this.LEAD_IN);
+    this.animationFrame = requestAnimationFrame(() => this.update());
+  }
+
+  update() {
+    if (!this.isPlaying) return;
+
+    let timeSinceStart = performance.now() - this.startTime;
+    if (this.audio.currentTime > 0) {
+      timeSinceStart = this.audio.currentTime * 1000;
+    }
+
+    while (this.chartIndex < this.chart.length) {
+      const note = this.chart[this.chartIndex];
+      const spawnTime = note.time - this.travelDuration;
+      if (timeSinceStart >= spawnTime) {
+        const cfg = this.noteConfig();
+        if (note.type === 'hold') {
+          spawnHoldNote(note.lane, note.duration, cfg);
+          this.holdActive = true;
+        } else {
+          spawnNote(note.lane, cfg);
+        }
+        this.chartIndex += 1;
+      } else {
+        break;
+      }
+    }
+
+    if (this.chartIndex >= this.chart.length && this.lanes.every((lane) => lane.length === 0)) {
+      this.end();
+      return;
+    }
+
+    this.animationFrame = requestAnimationFrame(() => this.update());
+  }
+
   stop() {
-    clearInterval(this.noteInterval);
-    clearTimeout(this.gameTimeout);
+    if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
+    this.isPlaying = false;
     removeControls();
-    this.noteInterval = null;
-    this.gameTimeout = null;
+    this.animationFrame = null;
+    this.chartIndex = 0;
+    this.audio.pause();
+    this.audio.currentTime = 0;
     document.querySelectorAll('.note, .hold').forEach((n) => n.remove());
     this.lanes.forEach((l) => {
       l.forEach((n) => {
