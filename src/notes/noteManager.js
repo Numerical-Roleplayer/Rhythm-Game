@@ -15,7 +15,16 @@ function completeHold(laneIndex, noteObj, opts) {
 }
 
 export function spawnNote(laneIndex, opts) {
-  const { laneContainer, laneKeys, lanes, travelDuration, hitY, LATE_WINDOW, handleLapse } = opts;
+  const {
+    laneContainer,
+    laneKeys,
+    lanes,
+    travelDuration,
+    hitY,
+    LATE_WINDOW,
+    handleLapse,
+    getIsPaused = () => false,
+  } = opts;
   const el = document.createElement('div');
   const laneKey = laneKeys[laneIndex];
   el.className = `note ${laneKey}`;
@@ -29,12 +38,26 @@ export function spawnNote(laneIndex, opts) {
   noteObj.lapseTimer = setTimeout(() => handleLapse(laneIndex, noteObj), lapseDelay);
 
   const spawnTime = performance.now();
+  let lastTime = spawnTime;
+  let elapsed = 0;
   function animate() {
+    if (!el.isConnected) return;
+
     const now = performance.now();
-    const progress = Math.min((now - spawnTime) / travelDuration, 1);
+    if (getIsPaused()) {
+      el.classList.add('paused-note');
+      lastTime = now;
+      requestAnimationFrame(animate);
+      return;
+    }
+
+    el.classList.remove('paused-note');
+    elapsed += now - lastTime;
+    lastTime = now;
+
+    const progress = Math.min(elapsed / travelDuration, 1);
     const y = progress * (hitY + 40);
     el.style.top = `${y - 40}px`;
-    if (!el.isConnected) return;
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
@@ -46,7 +69,17 @@ export function spawnNote(laneIndex, opts) {
 }
 
 export function spawnHoldNote(laneIndex, holdDuration, opts) {
-  const { laneContainer, laneKeys, lanes, travelDuration, hitY, LATE_WINDOW, handleLapse, onHoldComplete } = opts;
+  const {
+    laneContainer,
+    laneKeys,
+    lanes,
+    travelDuration,
+    hitY,
+    LATE_WINDOW,
+    handleLapse,
+    onHoldComplete,
+    getIsPaused = () => false,
+  } = opts;
   const el = document.createElement('div');
   const laneKey = laneKeys[laneIndex];
   el.className = 'hold';
@@ -67,6 +100,8 @@ export function spawnHoldNote(laneIndex, holdDuration, opts) {
   el.style.height = `${tailHeight + 20}px`;
 
   const spawnTime = performance.now();
+  let lastTime = spawnTime;
+  let elapsed = 0;
   const hitTime = spawnTime + travelDuration;
   const releaseTime = hitTime + holdDuration;
 
@@ -78,6 +113,7 @@ export function spawnHoldNote(laneIndex, holdDuration, opts) {
     headEl: head,
     tailEl: tail,
     tailHeight,
+    holdDuration,
     holding: false,
     animFrame: null,
   };
@@ -90,12 +126,29 @@ export function spawnHoldNote(laneIndex, holdDuration, opts) {
   const startTop = -40 - tailHeight;
   const totalDistance = hitY + 40 + tailHeight;
   function animate() {
-    if (noteObj.holding) return;
+    if (!el.isConnected) return;
+
     const now = performance.now();
-    const progress = Math.min((now - spawnTime) / totalDuration, 1);
+    if (getIsPaused()) {
+      el.classList.add('paused-note');
+      head.classList.add('paused-note');
+      tail.classList.add('paused-note');
+      lastTime = now;
+      noteObj.animFrame = requestAnimationFrame(animate);
+      return;
+    }
+
+    el.classList.remove('paused-note');
+    head.classList.remove('paused-note');
+    tail.classList.remove('paused-note');
+    if (noteObj.holding) return;
+
+    elapsed += now - lastTime;
+    lastTime = now;
+
+    const progress = Math.min(elapsed / totalDuration, 1);
     const y = startTop + progress * totalDistance;
     el.style.top = `${y}px`;
-    if (!el.isConnected) return;
     if (progress < 1) {
       noteObj.animFrame = requestAnimationFrame(animate);
     } else {

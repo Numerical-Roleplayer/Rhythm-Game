@@ -78,6 +78,44 @@ export default class Game {
     this.hitY = this.laneContainer.clientHeight - 20;
   }
 
+  pauseActiveHoldTimers() {
+    this.lanes.forEach((lane) => {
+      lane.forEach((note) => {
+        if (note.type !== 'hold' || !note.holding || !note.holdTimer) return;
+        const remaining = Math.max(0, note.releaseTime - performance.now());
+        clearTimeout(note.holdTimer);
+        note.holdTimer = null;
+        note.remainingHoldDuration = remaining;
+        const currentHeight = parseFloat(getComputedStyle(note.tailEl).height);
+        note.tailEl.style.transition = 'none';
+        note.tailEl.style.height = `${currentHeight}px`;
+      });
+    });
+  }
+
+  resumeActiveHoldTimers() {
+    this.lanes.forEach((lane) => {
+      lane.forEach((note) => {
+        if (
+          note.type !== 'hold' ||
+          !note.holding ||
+          note.remainingHoldDuration === undefined ||
+          note.remainingHoldDuration === null
+        )
+          return;
+
+        const remaining = note.remainingHoldDuration;
+        note.releaseTime = performance.now() + remaining;
+        note.tailEl.style.transition = 'none';
+        void note.tailEl.offsetHeight;
+        note.tailEl.style.transition = `height ${remaining}ms linear`;
+        note.tailEl.style.height = '0px';
+        note.holdTimer = setTimeout(() => note.completeHold(), remaining);
+        note.remainingHoldDuration = null;
+      });
+    });
+  }
+
   togglePause() {
     if (this.isEnding) return;
 
@@ -88,12 +126,14 @@ export default class Game {
       this.pauseStartTime = performance.now();
       this.feedback.textContent = 'PAUSED';
       this.feedback.style.opacity = '1';
+      this.pauseActiveHoldTimers();
       return;
     }
 
     const duration = performance.now() - this.pauseStartTime;
     this.totalPausedTime += duration;
     this.feedback.style.opacity = '0';
+    this.resumeActiveHoldTimers();
     this.audio.play();
     this.update();
   }
@@ -268,6 +308,7 @@ export default class Game {
       onHoldComplete: () => {
         this.holdActive = false;
       },
+      getIsPaused: () => this.isPaused,
     };
   }
 
@@ -338,6 +379,7 @@ export default class Game {
 
   end() {
     this.stop();
+    this.updateScore();
     this.finalScore.textContent = `Final Score: ${this.state.getScore()}`;
     this.game.style.display = 'none';
     this.gameOverScreen.style.display = 'flex';
