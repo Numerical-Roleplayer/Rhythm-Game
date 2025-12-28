@@ -1,8 +1,11 @@
 let keyDownHandler = null;
 let keyUpHandler = null;
 
-export function initControls(onKeyDown, onKeyUp) {
-  keyDownHandler = (e) => onKeyDown(e);
+export function initControls(onKeyDown, onKeyUp, onPause) {
+  keyDownHandler = (e) => {
+    if (e.key === 'Escape') onPause();
+    onKeyDown(e);
+  };
   keyUpHandler = (e) => onKeyUp(e);
   window.addEventListener('keydown', keyDownHandler);
   window.addEventListener('keyup', keyUpHandler);
