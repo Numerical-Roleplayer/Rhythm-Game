@@ -21,7 +21,7 @@
   --gold: #D4AF37;
   --parchment: #fdf6e3;
   --overlay-bg: radial-gradient(circle at center, rgba(46, 58, 70, 0.95), #1a1a2e); /* Vignette */
-  
+  --silver-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(200, 200, 220, 0.05) 50%, rgba(255, 255, 255, 0.15) 100%);
   /* Layout Z-Indices */
   --z-background: 0;
   --z-game: 10;
@@ -134,30 +134,68 @@ body {
   to { opacity: 1; }
 }
 
-/* --- COMPONENT: THE GILDED FRAME (Main Menu / Pause) --- */
-.gilded-frame {
-  position: relative;
-  padding: 50px 80px;
-  background: rgba(20, 20, 35, 0.85); /* Dark glass effect */
-  border: 2px solid var(--gold);
-  box-shadow: 
-    0 0 0 6px rgba(212, 175, 55, 0.15),  /* Outer Gold Ring */
-    0 0 40px rgba(0, 0, 0, 0.8),       /* Deep Shadow */
-    inset 0 0 30px rgba(212, 175, 55, 0.1); /* Inner Glow */
-  text-align: center;
-  border-radius: 4px;
-  min-width: 400px;
+/* 1. THE VANITY TABLE BACKGROUND */
+#main-menu {
+  background-image: url('/assets/vanity_bg.png'); /* The Cluttered Table */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-/* Decorative corner border effect */
+/* 2. THE MIRROR FRAME */
+.gilded-frame {
+  position: relative;
+  /* Adjust these dimensions to match your Mirror.png aspect ratio */
+  width: 700px; 
+  height: 1000px; 
+  
+  /* The Asset */
+  background-image: url('/assets/Mirror.png');
+  background-size: 100% 100%; /* Stretch image to fill container */
+  background-repeat: no-repeat;
+  background-color: transparent; /* Remove old dark background */
+  
+  /* Remove old borders since the image provides them */
+  border: none; 
+  box-shadow: none;
+  
+  /* Floating Effect */
+  filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.8));
+  
+  /* Centering */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px; /* IMPORTANT: Increase this to push text away from the frame edges */
+}
+
+/* Remove the old ::after pseudo-element that made the double border */
 .gilded-frame::after {
-  content: "";
+  display: none;
+}
+
+/* 3. THE REFLECTION (New Layer) */
+.mirror-reflection {
   position: absolute;
-  top: -6px; left: -6px; right: -6px; bottom: -6px;
-  border: 2px solid var(--gold);
-  opacity: 0.5;
-  pointer-events: none;
-  z-index: -1;
+  top: 60px;    /* Match the padding of .gilded-frame */
+  left: 60px;   /* Match the padding of .gilded-frame */
+  right: 60px;  /* Match the padding of .gilded-frame */
+  bottom: 60px; /* Match the padding of .gilded-frame */
+  
+  /* Glass Effect */
+  background: var(--silver-glass);
+  backdrop-filter: blur(8px) saturate(1.2);
+  border-radius: 4px;
+  
+  z-index: 0; /* Behind the content */
+}
+
+/* 4. THE CONTENT */
+.mirror-content {
+  position: relative;
+  z-index: 1; /* Puts text above the glass */
+  width: 100%;
+  text-align: center;
 }
 
 /* Typography */
@@ -257,7 +295,7 @@ body {
   margin: 0 auto 10px auto; /* Centers the logo and adds a small gap below it */
   max-width: 100%;          /* Prevents the logo from overflowing the frame */
   height: auto;             /* Maintains aspect ratio */
-  width: 420px;             /* Adjust this value based on your logo's size */
+  width: 520px;             /* Adjust this value based on your logo's size */
   
   /* Adds a subtle entry animation to match the menu feel */
   animation: logoFadeIn 0.8s ease-out;
@@ -545,3 +583,4 @@ body {
 
 .lane-4 .note { --note-offset: 1px; }
 .lane-4 .hit-indicator { --indicator-offset: 1px; }
+
