@@ -494,6 +494,65 @@ body {
   transform: translateY(10px); /* Pull ribbon down on hover */
 }
 
+/* src/styles.css */
+
+/* Meta Info Row (Duration) */
+.song-meta-row {
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  color: #555;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+/* Container for the 6 symbols */
+.difficulty-container {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.slippers-row {
+  display: flex;
+  gap: 8px; /* Space between slippers */
+}
+
+/* The Slipper Asset Size */
+.diff-icon {
+  width: 30px; 
+  height: auto;
+  opacity: 0.3; /* Default "Empty" state (faded) */
+  filter: sepia(100%) hue-rotate(-50deg); /* Optional: tint them gold/brown */
+  transition: all 0.3s ease;
+}
+
+.diff-icon.filled {
+  opacity: 1; /* "Full" state */
+  transform: scale(1.1);
+  filter: none; /* Show original asset color */
+}
+
+/* A specialized Play Button for the book view */
+.ink-play-btn {
+  margin-top: 30px;
+  background: transparent;
+  border: 2px solid #800020;
+  color: #800020;
+  padding: 10px 30px;
+  font-family: 'Charm', cursive;
+  font-size: 1.5rem;
+  cursor: pointer;
+  border-radius: 50px; /* Pill shape */
+  transition: all 0.3s ease;
+}
+
+.ink-play-btn:hover {
+  background: #800020;
+  color: #fdf6e3;
+}
+
 /* --- SCREEN: PAUSE MENU --- */
 .lace-overlay {
   position: absolute;

@@ -27,36 +27,34 @@
 
   <div id="song-select" class="screen overlay hidden">
     <div class="book-container">
-    
-      <div class="page-left">
-        <div id="selected-song-display">
-          <h2 class="handwritten-title">Valse de la Poupée</h2>
-          <div class="ink-subtitle">Léo Delibes</div>
-          <div class="stamp-box">
-            <span class="grade-stamp">Étoile</span>
-          </div>
-          <div class="stats-ink">
-            Personal Best: <span class="score-ink">104,250</span>
-          </div>
+  
+    <div class="page-left">
+      <div id="selected-song-display" class="hidden"> <h2 id="song-title-display" class="handwritten-title">Song Title</h2>
+      
+        <div class="song-meta-row">
+          <span class="meta-label">Duration:</span>
+          <span id="song-duration-display" class="meta-value">--:--</span>
         </div>
+
+        <div class="difficulty-container">
+          <div id="difficulty-display" class="slippers-row">
+            </div>
+        </div>
+
+        <div class="stats-ink">
+          Personal Best: <span id="song-score-display" class="score-ink">--</span>
+        </div>
+      
+        <button id="btn-play-song" class="ink-play-btn">Play Variation</button>
+
       </div>
+    
+      <div id="empty-state-msg" class="ink-subtitle">Select a variation...</div>
+    </div>
 
     <div class="page-right">
       <h3 class="page-header">Repertoire</h3>
-      <div class="ledger-list">
-        <div class="ledger-entry active">
-          <span class="entry-title">Valse de la Poupée</span>
-          <span class="entry-composer">Delibes</span>
-        </div>
-        <div class="ledger-entry">
-          <span class="entry-title">Danse Macabre</span>
-          <span class="entry-composer">Saint-Saëns</span>
-        </div>
-        <div class="ledger-entry">
-          <span class="entry-title">Swan Lake</span>
-          <span class="entry-composer">Tchaikovsky</span>
-        </div>
-      </div>
+      <div id="ledger-list-container" class="ledger-list"></div>
     </div>
 
     <button id="btn-back" class="ribbon-bookmark">Mirror</button>

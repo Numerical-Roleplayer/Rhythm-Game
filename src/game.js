@@ -7,8 +7,34 @@ import scoringDefaults from './config/scoring.js';
 const laneKeys = ['d', 'f', 'j', 'k', 'l'];
 const KEY_MAP = { d: 0, f: 1, j: 2, k: 3, l: 4 };
 
+// src/game.js
+
+// 1. THE DATA (Add this at the top of the file)
+const SONG_LIST = [
+  {
+    id: 'coppelia',
+    title: "Valse de la Poupée",
+    composer: "Léo Delibes",
+    duration: "2:15",
+    difficulty: 3, // Out of 6
+    chartUrl: '/songs/Coppélia-Valse_de_la_poupee.json',
+    audioUrl: '/songs/Coppélia-Valse_de_la_poupee.mp3'
+  },
+  {
+    id: 'danse_macabre',
+    title: "Danse Macabre",
+    composer: "Saint-Saëns",
+    duration: "3:40",
+    difficulty: 5,
+    chartUrl: '/songs/danse_macabre.json', // Placeholder
+    audioUrl: '/songs/danse_macabre.mp3'
+  },
+  // Add more songs here easily!
+];
+
 export default class Game {
   constructor({ timing = {}, scoring = {} } = {}) {
+    // ... existing initialization ...
     this.game = document.getElementById('game');
     this.scoreDisplay = document.getElementById('score-value');
     this.multiplierDisplay = document.getElementById('multiplier-display');
@@ -85,8 +111,19 @@ export default class Game {
 
     this.startButton.addEventListener('click', () => this.start());
     this.restartButton.addEventListener('click', () => this.start());
+    this.selectedSong = null; // Track selection
+    
+    // Initialize the UI
+    this.populateRepertoire();
+    
+    // Bind the Play Button on the book
+    const playBtn = document.getElementById('btn-play-song');
+    if(playBtn) playBtn.onclick = () => {
+      if(this.selectedSong) this.start(this.selectedSong);
+    };
   }
 
+  // ... existing methods ...
   computeDimensions() {
     this.hitY = this.laneContainer.clientHeight - 20;
   }
@@ -320,7 +357,8 @@ export default class Game {
     }, 600);
   }
 
-  async start() {
+  async start(songData = this.selectedSong) {
+      console.log("Starting:", songData.title);
       this.stop();
       this.isPaused = false;
       this.pauseStartTime = 0;
@@ -457,5 +495,69 @@ export default class Game {
 
     // Show the End Screen
     this.showScreen('game-over');
+  }
+  // 2. NEW METHOD: Populate the Right Page List
+  populateRepertoire() {
+    const listContainer = document.getElementById('ledger-list-container');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = ''; // Clear current list
+
+    SONG_LIST.forEach(song => {
+      // Create the list entry
+      const entry = document.createElement('div');
+      entry.className = 'ledger-entry';
+      entry.innerHTML = `
+        <span class="entry-title">${song.title}</span>
+        <span class="entry-composer">${song.composer}</span>
+      `;
+
+      // Click Event
+      entry.onclick = () => {
+        // Remove 'active' class from all others
+        document.querySelectorAll('.ledger-entry').forEach(el => el.classList.remove('active'));
+        // Add 'active' to this one
+        entry.classList.add('active');
+        // Update Left Page
+        this.selectSong(song);
+      };
+
+      listContainer.appendChild(entry);
+    });
+  }
+
+  // 3. NEW METHOD: Update the Left Page Display
+  selectSong(song) {
+    this.selectedSong = song;
+
+    // Show the display, hide the empty message
+    document.getElementById('selected-song-display').classList.remove('hidden');
+    document.getElementById('empty-state-msg').classList.add('hidden');
+
+    // Update Text
+    document.getElementById('song-title-display').textContent = song.title;
+    document.getElementById('song-duration-display').textContent = song.duration;
+    
+    // Update Score (Mocking localStorage for now)
+    const savedScore = localStorage.getItem(`pb_${song.id}`) || "--";
+    document.getElementById('song-score-display').textContent = savedScore;
+
+    // Update Difficulty Symbols (The 6 Assets)
+    const diffContainer = document.getElementById('difficulty-display');
+    diffContainer.innerHTML = ''; // Clear old icons
+    
+    for (let i = 1; i <= 6; i++) {
+      const icon = document.createElement('img');
+      // Assuming your asset is named 'slipper_icon.png'
+      icon.src = 'assets/Wax-Active.png'; 
+      icon.className = 'diff-icon';
+      
+      // Fill the icon if i <= difficulty
+      if (i <= song.difficulty) {
+        icon.classList.add('filled');
+      }
+      
+      diffContainer.appendChild(icon);
+    }
   }
 }
