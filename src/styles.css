@@ -344,118 +344,154 @@ body {
 }
 
 /* --- SCREEN: REPERTOIRE (Song Selection) --- */
-.repertoire-container {
+/* src/styles.css */
+
+/* 1. THE VELVET LEDGER BACKGROUND */
+#song-select {
+  /* Replace 'ledger_bg.jpg' with your actual filename */
+  background-image: url('assets/velvet_ledger.png');
+  background-size: cover;
+  background-position: center;
+}
+
+/* 2. THE BOOK GEOMETRY */
+.book-container {
+  display: flex;
+  width: 80%;
+  height: 70%;
+  max-width: 900px;
+  /* Rotate slightly to match the image angle */
+  transform: rotate(5deg); 
+  /* Debug border: remove this once you are happy with alignment */
+  /* border: 1px solid red; */
+}
+
+/* 3. PAGE LAYOUTS */
+.page-left, .page-right {
+  flex: 1;
+  padding: 4px; /* Originally 40 */
   display: flex;
   flex-direction: column;
+}
+
+.page-left {
+  /* Push content slightly right to avoid the book gutter */
+  padding-right: 0px; /* Originally 60 */
+  justify-content: center;
   align-items: center;
-  width: 90%;
-  max-width: 1200px;
-}
-
-.cards-scroll {
-  display: flex;
-  gap: 40px;
-  padding: 40px;
-  overflow-x: auto;
-  width: 100%;
-  justify-content: center; /* Center cards if few, scroll if many */
-  /* Scrollbar styling for Webkit */
-  scrollbar-width: thin;
-  scrollbar-color: var(--gold) transparent;
-}
-
-.song-card {
-  width: 260px;
-  height: 360px;
-  background: var(--parchment);
-  color: #2E3A46; /* Ink color */
-  padding: 25px;
-  border-radius: 3px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  border: 1px solid #dcd3b6;
-  cursor: pointer;
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  position: relative;
-  flex-shrink: 0; /* Prevent squishing */
-}
-
-/* Inner border line on card */
-.song-card::before {
-  content: "";
-  position: absolute;
-  top: 10px; left: 10px; right: 10px; bottom: 10px;
-  border: 1px solid rgba(212, 175, 55, 0.4);
-  pointer-events: none;
-}
-
-.song-card:hover {
-  transform: translateY(-15px) rotate(1deg);
-  box-shadow: 
-    0 20px 40px rgba(0,0,0,0.4), 
-    0 0 20px rgba(212, 175, 55, 0.4); /* Gold Glow */
-  z-index: 10;
-}
-
-.card-header {
   text-align: center;
-  border-bottom: 1px solid var(--gold);
-  padding-bottom: 15px;
-  margin-bottom: 10px;
 }
 
-.song-title {
+.page-right {
+  /* Push content slightly left to avoid the book gutter */
+  padding-left: 50px; 
+  padding-top: 80px;
+}
+
+/* 4. TYPOGRAPHY (Ink Style) */
+.handwritten-title {
   font-family: 'Parisienne', cursive;
-  font-size: 2rem;
-  color: #1a1a2e;
-  line-height: 1.1;
+  font-size: 3.5rem;
+  color: #2c3e50; /* Dark Ink Blue */
+  margin: 0;
+  text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
+  /* Slight slant to look hand-penned */
+  transform: rotate(-1deg); 
 }
 
-.composer {
-  font-size: 0.9rem;
-  margin-top: 5px;
+.ink-subtitle {
+  font-family: 'Georgia', serif;
   font-style: italic;
   color: #555;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
 }
 
-.card-body {
-  flex: 1;
+.page-header {
+  font-family: 'Charm', cursive;
+  font-size: 2.5rem;
+  color: #8b4513; /* Faded Brown Ink */
+  border-bottom: 2px double #d4af37;
+  padding-bottom: 10px;
+  margin-top: 0;
+  width: 100%;
+  text-align: center;
+}
+
+/* 5. THE LEDGER LIST (Right Page) */
+.ledger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  overflow-y: auto;
+  height: 100%;
+  /* Custom scrollbar to look like gold leaf */
+  scrollbar-color: #d4af37 transparent; 
+  scrollbar-width: thin;
+}
+
+.ledger-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 5px;
+  border-bottom: 1px dashed rgba(139, 69, 19, 0.3); /* Dotted line */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Georgia', serif;
+  color: #4a4a4a;
+}
+
+.ledger-entry:hover {
+  background: rgba(212, 175, 55, 0.1);
+  padding-left: 10px; /* Slight nudge movement */
+  color: #000;
+}
+
+.ledger-entry.active {
+  font-weight: bold;
+  color: #800020; /* Deep Burgundy for selected song */
+  border-bottom: 1px solid #800020;
+}
+
+.entry-title {
+  font-size: 1.4rem;
+  font-family: 'Charm', cursive;
+}
+
+.entry-composer {
+  font-size: 0.9rem;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* 6. THE BOOKMARK (Back Button) */
+.ribbon-bookmark {
+  position: absolute;
+  bottom: -100px; /* Hanging off the book */
+  right: -20px;
+  width: 60px;
+  height: 200px;
+  background: #800020; /* Red Velvet Ribbon */
+  color: #fdf6e3;
+  border: none;
+  font-family: 'Parisienne', cursive;
+  font-size: 1.5rem;
+  writing-mode: vertical-rl; /* Text runs vertically */
+  text-orientation: mixed;
+  cursor: pointer;
+  box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%); /* V-cut at bottom */
+  
+  /* Flex to center text vertically */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.score-stamp {
-  font-family: 'Charm', cursive;
-  font-size: 1.8rem;
-  color: #c0392b; /* Stamp Red */
-  transform: rotate(-5deg);
-  opacity: 0.8;
-  border: 2px solid #c0392b;
-  padding: 5px 10px;
-  border-radius: 4px;
-}
-
-.card-footer {
-  text-align: center;
-  margin-top: 10px;
-}
-
-.difficulty-icons {
-  color: var(--blush);
-  font-size: 1.2rem;
-  margin-bottom: 5px;
-  letter-spacing: 5px;
-}
-
-.diff-text {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #666;
-  font-weight: bold;
+.ribbon-bookmark:hover {
+  transform: translateY(10px); /* Pull ribbon down on hover */
 }
 
 /* --- SCREEN: PAUSE MENU --- */

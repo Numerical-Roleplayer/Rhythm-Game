@@ -26,26 +26,42 @@
   </div>
 
   <div id="song-select" class="screen overlay hidden">
-    <div class="repertoire-container">
-      <h2 class="section-title">Repertoire</h2>
-      <div class="cards-scroll">
-        <div class="song-card" id="card-coppelia">
-          <div class="card-header">
-            <div class="song-title">Valse de la Poupée</div>
-            <div class="composer">Léo Delibes</div>
+    <div class="book-container">
+    
+      <div class="page-left">
+        <div id="selected-song-display">
+          <h2 class="handwritten-title">Valse de la Poupée</h2>
+          <div class="ink-subtitle">Léo Delibes</div>
+          <div class="stamp-box">
+            <span class="grade-stamp">Étoile</span>
           </div>
-          <div class="card-body">
-            <div class="score-stamp">PB: --</div>
-          </div>
-          <div class="card-footer">
-            <div class="difficulty-icons">🩰 🩰 🩰 ⚪ ⚪</div>
-            <div class="diff-text">Étoile</div>
+          <div class="stats-ink">
+            Personal Best: <span class="score-ink">104,250</span>
           </div>
         </div>
+      </div>
+
+    <div class="page-right">
+      <h3 class="page-header">Repertoire</h3>
+      <div class="ledger-list">
+        <div class="ledger-entry active">
+          <span class="entry-title">Valse de la Poupée</span>
+          <span class="entry-composer">Delibes</span>
         </div>
-      <button id="btn-back" class="back-btn">Return to Foyer</button>
+        <div class="ledger-entry">
+          <span class="entry-title">Danse Macabre</span>
+          <span class="entry-composer">Saint-Saëns</span>
+        </div>
+        <div class="ledger-entry">
+          <span class="entry-title">Swan Lake</span>
+          <span class="entry-composer">Tchaikovsky</span>
+        </div>
+      </div>
     </div>
+
+    <button id="btn-back" class="ribbon-bookmark">Mirror</button>
   </div>
+</div>
 
   <div id="game" class="hidden">
     <div class="track">
