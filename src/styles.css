@@ -148,6 +148,7 @@ body {
   /* Adjust these dimensions to match your Mirror.png aspect ratio */
   width: 700px; 
   height: 1000px; 
+  max-height: 90vh;
   
   /* The Asset */
   background-image: url('/assets/Mirror.png');
@@ -177,15 +178,15 @@ body {
 /* 3. THE REFLECTION (New Layer) */
 .mirror-reflection {
   position: absolute;
-  top: 60px;    /* Match the padding of .gilded-frame */
-  left: 60px;   /* Match the padding of .gilded-frame */
-  right: 60px;  /* Match the padding of .gilded-frame */
-  bottom: 60px; /* Match the padding of .gilded-frame */
+  top: 13%;    /* Match the padding of .gilded-frame */
+  left: 13.5%;   /* Match the padding of .gilded-frame */
+  right: 13.5%;  /* Match the padding of .gilded-frame */
+  bottom: 20%; /* Match the padding of .gilded-frame */
   
   /* Glass Effect */
   background: var(--silver-glass);
-  backdrop-filter: blur(8px) saturate(1.2);
-  border-radius: 4px;
+  backdrop-filter: blur(0.5px) sepia(40%);
+  border-radius: 40%;
   
   z-index: 0; /* Behind the content */
 }
@@ -226,45 +227,79 @@ body {
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
+.menu-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centers the buttons horizontally */
+  width: 60%;          /* Controls how wide the separator lines are */
+  margin: 10px auto;   /* Centers the container itself */
+  /* CONTROLLING THE GAP */
+  margin-top: 0px; /* INCREASE this value to push buttons lower */
+}
+
 /* --- COMPONENT: BUTTONS --- */
+/* src/styles.css */
+
 .menu-btn {
   display: block;
   width: 100%;
-  padding: 15px 25px; /* Added horizontal padding */
-  margin: 15px 0;
+  padding: 15px 0; /* Vertical breathing room */
+  margin: 5px 0;   /* Space between buttons */
   
-  /* Glassy background to let the art show through */
-  background: linear-gradient(90deg, rgba(26, 26, 46, 0.6) 0%, transparent 100%);
+  /* RESET STANDARD STYLES */
+  background-color: transparent;
+  border: none; /* Remove standard borders */
   
-  /* The "Stem" - A subtle green border on the left */
-  border: 1px solid rgba(212, 175, 55, 0.2); /* Faint Gold */
-  border-left: 3px solid var(--moss-green);   /* Sage Green Accent */
-  
-  color: var(--parchment);
+  /* TYPOGRAPHY */
   font-family: 'Charm', cursive;
-  font-size: 1.8rem; /* Slightly larger */
-  text-align: left;  /* Align text to the "stem" */
-  cursor: pointer;
+  font-size: 2rem;
+  color: #F2E8C9; /* Cream */
+  text-align: center;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9);
   
-  /* Smooth transitions for the "Bloom" effect */
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  position: relative;
-  overflow: hidden;
+  /* --- THE MAGICAL TAPERED BORDERS --- */
+  background-image: 
+    /* Top Line: Transparent -> Gold -> Transparent */
+    linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 1) 50%, transparent 100%),
+    /* Bottom Line: Same gradient */
+    linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 1) 50%, transparent 100%);
+    
+  /* SIZE: 100% width, 2px height (Thickness of the line) */
+  background-size: 100% 2px;
+  
+  /* POSITION: One at top, one at bottom */
+  background-position: top center, bottom center;
+  
+  /* PREVENT REPEAT */
+  background-repeat: no-repeat;
+  
+  cursor: pointer;
+  transition: all 0.4s ease;
 }
 
+/* HOVER EFFECT: Make the lines glow and text pop */
 .menu-btn:hover {
-  /* Background flushes with Old Rose */
-  background: linear-gradient(90deg, rgba(216, 140, 154, 0.25) 0%, rgba(26, 26, 46, 0.4) 100%);
+  /* Scale up text slightly */
+  transform: scale(1.05);
+  color: #fff;
   
-  /* Borders light up */
-  border-color: var(--gold);
-  border-left-color: var(--old-rose); /* Stem turns pink */
-  border-left-width: 5px; /* Stem grows slightly */
+  /* Intensify the Gold Lines on hover (make them thicker or brighter) */
+  background-image: 
+    linear-gradient(90deg, transparent 0%, #FFD700 50%, transparent 100%),
+    linear-gradient(90deg, transparent 0%, #FFD700 50%, transparent 100%);
+    
+  /* Make lines slightly thicker on hover */
+  background-size: 100% 3px;
   
-  /* Text Glow */
-  text-shadow: 0 0 10px var(--old-rose), 0 0 20px var(--gold);
-  padding-left: 35px; /* Text moves slightly to the right */
-  transform: translateX(5px);
+  /* Add Text Glow */
+  text-shadow: 
+    0 0 10px rgba(212, 175, 55, 0.8),
+    0 0 20px rgba(212, 175, 55, 0.4);
+}
+
+/* Remove the border from the very last button for a clean look */
+.menu-btn:last-child {
+  border-bottom: none;
 }
 
 .menu-btn:active {
@@ -296,6 +331,7 @@ body {
   max-width: 100%;          /* Prevents the logo from overflowing the frame */
   height: auto;             /* Maintains aspect ratio */
   width: 520px;             /* Adjust this value based on your logo's size */
+  margin-bottom: 0; /* Remove default bottom margin if it exists */
   
   /* Adds a subtle entry animation to match the menu feel */
   animation: logoFadeIn 0.8s ease-out;
