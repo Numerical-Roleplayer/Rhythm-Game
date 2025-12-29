@@ -54,7 +54,6 @@ export default class Game {
     // Buttons
     document.getElementById('btn-enter').onclick = () => this.showScreen('song-select');
     document.getElementById('btn-back').onclick = () => this.showScreen('main-menu');
-    document.getElementById('card-coppelia').onclick = () => this.start();
     document.getElementById('btn-resume').onclick = () => this.togglePause();
     document.getElementById('btn-quit').onclick = () => this.stopAndReturn();
     document.getElementById('btn-exit').onclick = () => this.showScreen('main-menu');
@@ -92,6 +91,11 @@ export default class Game {
     this.hitY = 0;
     this.holdActive = false;
 
+    this.selectedSong = null; // Track selection
+    
+    // Initialize the UI
+    this.populateRepertoire();
+
     this.computeDimensions = this.computeDimensions.bind(this);
     window.addEventListener('resize', this.computeDimensions);
 
@@ -108,13 +112,6 @@ export default class Game {
       flash.className = 'hit-flash';
       lane.appendChild(flash);
     });
-
-    this.startButton.addEventListener('click', () => this.start());
-    this.restartButton.addEventListener('click', () => this.start());
-    this.selectedSong = null; // Track selection
-    
-    // Initialize the UI
-    this.populateRepertoire();
     
     // Bind the Play Button on the book
     const playBtn = document.getElementById('btn-play-song');
@@ -531,33 +528,43 @@ export default class Game {
     this.selectedSong = song;
 
     // Show the display, hide the empty message
-    document.getElementById('selected-song-display').classList.remove('hidden');
-    document.getElementById('empty-state-msg').classList.add('hidden');
+    const display = document.getElementById('selected-song-display');
+    const msg = document.getElementById('empty-state-msg');
+    if (display) display.classList.remove('hidden');
+    if (msg) msg.classList.add('hidden');
 
     // Update Text
-    document.getElementById('song-title-display').textContent = song.title;
-    document.getElementById('song-duration-display').textContent = song.duration;
+    const titleEl = document.getElementById('song-title-display');
+    const durEl = document.getElementById('song-duration-display');
+    const scoreEl = document.getElementById('song-score-display');
     
-    // Update Score (Mocking localStorage for now)
+    if (titleEl) titleEl.textContent = song.title;
+    if (durEl) durEl.textContent = song.duration;
+    
+    // Update Score
     const savedScore = localStorage.getItem(`pb_${song.id}`) || "--";
-    document.getElementById('song-score-display').textContent = savedScore;
+    if (scoreEl) scoreEl.textContent = savedScore;
 
-    // Update Difficulty Symbols (The 6 Assets)
+    // Update Difficulty (Wax Seals)
     const diffContainer = document.getElementById('difficulty-display');
-    diffContainer.innerHTML = ''; // Clear old icons
-    
-    for (let i = 1; i <= 6; i++) {
-      const icon = document.createElement('img');
-      // Assuming your asset is named 'slipper_icon.png'
-      icon.src = 'assets/Wax-Active.png'; 
-      icon.className = 'diff-icon';
+    if (diffContainer) {
+      diffContainer.innerHTML = ''; // Clear old icons
       
-      // Fill the icon if i <= difficulty
-      if (i <= song.difficulty) {
-        icon.classList.add('filled');
+      for (let i = 1; i <= 6; i++) {
+        const icon = document.createElement('img');
+        icon.className = 'diff-icon';
+        
+        // LOGIC: Use Active image for difficulty, Empty for the rest
+        if (i <= song.difficulty) {
+          icon.src = 'assets/Wax-Active.png';
+          icon.classList.add('filled'); // Keeps it full opacity
+        } else {
+          icon.src = 'assets/Wax-Empty.png';
+          // icon.classList.remove('filled'); // Standard opacity
+        }
+        
+        diffContainer.appendChild(icon);
       }
-      
-      diffContainer.appendChild(icon);
     }
   }
 }
