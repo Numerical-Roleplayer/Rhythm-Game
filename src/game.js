@@ -16,7 +16,7 @@ const SONG_LIST = [
     title: "Valse de la Poupée",
     composer: "Léo Delibes",
     duration: "2:15",
-    difficulty: 3, // Out of 6
+    difficulty: 5, // Out of 6
     chartUrl: '/songs/Coppélia-Valse_de_la_poupee.json',
     audioUrl: '/songs/Coppélia-Valse_de_la_poupee.mp3'
   },
@@ -30,6 +30,15 @@ const SONG_LIST = [
     audioUrl: '/songs/danse_macabre.mp3'
   },
   // Add more songs here easily!
+  // --- ADD THESE FILLER SONGS TO TEST SCROLLING ---
+  { id: 'nutcracker', title: "Dance of the Sugar Plum Fairy", composer: "Tchaikovsky", duration: "2:20", difficulty: 4, chartUrl: '/songs/Dance_of_the_Sugar_Plum_Fairy.json', audioUrl: '/songs/Dance_of_the_Sugar_Plum_Fairy.mp3' },
+  { id: 'giselle', title: "Giselle: Act 1", composer: "Adolphe Adam", duration: "2:14", difficulty: 5, chartUrl: '/songs/Giselle_Act_I.json', audioUrl: '/songs/Giselle_Act_I.mp3' },
+  { id: 'romeo', title: "Romeo & Juliet", composer: "Prokofiev", duration: "3:15", difficulty: 5, chartUrl: '', audioUrl: '' },
+  { id: 'don_q', title: "Don Quixote: Act 3 - Quiteria", composer: "Minkus", duration: "1:23", difficulty: 5, chartUrl: '/songs/Don_Quixote_Quiteria.json', audioUrl: '/songs/Don_Quixote_Quiteria.mp3' },
+  { id: 'constance', title: "Inner Canvas: Prelude", composer: "Rodrigues", duration: "2:06", difficulty: 3, chartUrl: '/songs/Inner_Canvas.json', audioUrl: '/songs/Inner_Canvas.mp3' },
+  { id: 'coppelia2', title: "Coppélia: Tableau 1", composer: "Léo Delibes", duration: "2:29", difficulty: 4, chartUrl: '/songs/Coppélia_Tableau_1_Valse.json', audioUrl: '/songs/Coppélia_Tableau_1_Valse.mp3' },
+  { id: 'corsaire', title: "Le Corsaire: Act II Variation Medora", composer: "Adolphe Adam", duration: "1:28", difficulty: 3, chartUrl: '/songs/Le_Corsaire_Act II_Variation_Medora.json', audioUrl: '/songs/Le_Corsaire_Act II_Variation_Medora.mp3' },
+  { id: 'nutcracker2', title: "Nutcracker: Marzipan", composer: "Tchaikovsky", duration: "2:19", difficulty: 6, chartUrl: '/songs/Nutcracker-Marzipan.json', audioUrl: '/songs/Nutcracker-Marzipan.mp3' },
 ];
 
 export default class Game {
@@ -361,7 +370,17 @@ export default class Game {
       this.pauseStartTime = 0;
       this.totalPausedTime = 0;
       this.isEnding = false;
-    
+
+      // 2. LOAD NEW AUDIO SOURCE
+      if (this.audio) {
+        this.audio.pause();
+        this.audio.src = songData.audioUrl; // <--- CHANGE SOURCE HERE
+        this.audio.currentTime = 0;
+        this.audio.load(); // Ensure it buffers
+      } else {
+        this.audio = new Audio(songData.audioUrl);
+      }
+
       // Reset Game State
       this.state.setScore(0);
       this.state.resetStreak();
@@ -371,7 +390,7 @@ export default class Game {
       this.state.hitCount = 0;
       this.updateScore();
 
-      // NEW: Transition to the Game screen using the UI helper
+      // Transition to the Game screen using the UI helper
       this.showScreen('game');
 
       // Ensure dimensions are correct for the track
@@ -384,20 +403,17 @@ export default class Game {
         () => this.togglePause()
       );
 
-      // Reset Audio
-      this.audio.pause();
-      this.audio.currentTime = 0;
-
       try {
         // Load the selected chart
-        const response = await fetch('/songs/Coppélia-Valse_de_la_poupee.json');
-        if (!response.ok) throw new Error('Failed to load chart');
+        const response = await fetch(songData.chartUrl);
+        if (!response.ok) throw new Error(`Failed to load chart: ${songData.chartUrl}`);
       
         this.chart = await response.json();
         this.startGameLoop();
       } catch (err) {
         console.error(err);
-        this.showFeedback('Failed to load chart');
+        this.showFeedback('Chart Missing!');
+        setTimeout(() => this.showScreen('song-select'), 2000);
       }
   }
 

@@ -1,0 +1,150 @@
+[
+  {
+    "time": 51154,
+    "lane": 0,
+    "type": "hold",
+    "duration": 23165
+  },
+  {
+    "time": 74420,
+    "lane": 1,
+    "type": "hold",
+    "duration": 5310
+  },
+  {
+    "time": 79830,
+    "lane": 4,
+    "type": "hold",
+    "duration": 1386
+  },
+  {
+    "time": 81316,
+    "lane": 3,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 81688,
+    "lane": 4,
+    "type": "hold",
+    "duration": 7771
+  },
+  {
+    "time": 89559,
+    "lane": 3,
+    "type": "hold",
+    "duration": 991
+  },
+  {
+    "time": 90651,
+    "lane": 1,
+    "type": "hold",
+    "duration": 11857
+  },
+  {
+    "time": 102609,
+    "lane": 3,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 102609,
+    "lane": 0,
+    "type": "normal"
+  },
+  {
+    "time": 102841,
+    "lane": 2,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 103073,
+    "lane": 3,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 103538,
+    "lane": 4,
+    "type": "hold",
+    "duration": 851
+  },
+  {
+    "time": 104490,
+    "lane": 0,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 104699,
+    "lane": 2,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 104931,
+    "lane": 0,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 105186,
+    "lane": 1,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 105628,
+    "lane": 0,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 106092,
+    "lane": 2,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 106347,
+    "lane": 1,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 106742,
+    "lane": 2,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 107230,
+    "lane": 1,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 107787,
+    "lane": 2,
+    "type": "hold",
+    "duration": 66262
+  },
+  {
+    "time": 174150,
+    "lane": 0,
+    "type": "hold",
+    "duration": 120573
+  },
+  {
+    "time": 294824,
+    "lane": 1,
+    "type": "normal",
+    "duration": 0
+  },
+  {
+    "time": 294824,
+    "lane": 3,
+    "type": "normal"
+  }
+]
