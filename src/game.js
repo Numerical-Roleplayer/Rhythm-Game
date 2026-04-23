@@ -33,12 +33,16 @@ const SONG_LIST = [
   // --- ADD THESE FILLER SONGS TO TEST SCROLLING ---
   { id: 'nutcracker', title: "Dance of the Sugar Plum Fairy", composer: "Tchaikovsky", duration: "2:20", difficulty: 4, chartUrl: '/songs/Dance_of_the_Sugar_Plum_Fairy.json', audioUrl: '/songs/Dance_of_the_Sugar_Plum_Fairy.mp3' },
   { id: 'giselle', title: "Giselle: Act 1", composer: "Adolphe Adam", duration: "2:14", difficulty: 5, chartUrl: '/songs/Giselle_Act_I.json', audioUrl: '/songs/Giselle_Act_I.mp3' },
-  { id: 'romeo', title: "Romeo & Juliet", composer: "Prokofiev", duration: "3:15", difficulty: 5, chartUrl: '', audioUrl: '' },
   { id: 'don_q', title: "Don Quixote: Act 3 - Quiteria", composer: "Minkus", duration: "1:23", difficulty: 5, chartUrl: '/songs/Don_Quixote_Quiteria.json', audioUrl: '/songs/Don_Quixote_Quiteria.mp3' },
-  { id: 'constance', title: "Inner Canvas: Prelude", composer: "Rodrigues", duration: "2:06", difficulty: 3, chartUrl: '/songs/Inner_Canvas.json', audioUrl: '/songs/Inner_Canvas.mp3' },
   { id: 'coppelia2', title: "Coppélia: Tableau 1", composer: "Léo Delibes", duration: "2:29", difficulty: 4, chartUrl: '/songs/Coppélia_Tableau_1_Valse.json', audioUrl: '/songs/Coppélia_Tableau_1_Valse.mp3' },
   { id: 'corsaire', title: "Le Corsaire: Act II Variation Medora", composer: "Adolphe Adam", duration: "1:28", difficulty: 3, chartUrl: '/songs/Le_Corsaire_Act II_Variation_Medora.json', audioUrl: '/songs/Le_Corsaire_Act II_Variation_Medora.mp3' },
   { id: 'nutcracker2', title: "Nutcracker: Marzipan", composer: "Tchaikovsky", duration: "2:19", difficulty: 6, chartUrl: '/songs/Nutcracker-Marzipan.json', audioUrl: '/songs/Nutcracker-Marzipan.mp3' },
+  { id: 'esmeralda', title: "Esmeralda - Variation", composer: "Pugni", duration: "1:24", difficulty: 4, chartUrl: '/songs/La_Esmeralda.json', audioUrl: '/songs/La_Esmeralda.mp3' },
+  { id: 'flore', title: "Le Rèveil de Flore", composer: "Riccardo Drigo", duration: "2:27", difficulty: 4, chartUrl: '/songs/Le_Rèveil_de_Flore.json', audioUrl: '/songs/Le_Rèveil_de_Flore.mp3' },
+  { id: 'barre', title: "Pointe", composer: "Battement Piano", duration: "0:54", difficulty: 3, chartUrl: '/songs/Pointe.json', audioUrl: '/songs/Pointe.mp3' },
+  { id: 'barre', title: "Jeté", composer: "Battement Piano", duration: "1:09", difficulty: 4, chartUrl: '/songs/Jeté.json', audioUrl: '/songs/Jeté.mp3' },
+  { id: 'constance', title: "Inner Canvas: Prelude", composer: "Rodrigues", duration: "2:06", difficulty: 3, chartUrl: '/songs/Inner_Canvas.json', audioUrl: '/songs/Inner_Canvas.mp3' },
+  { id: 'career', title: "The Makings of a Career", composer: "Lewin", duration: "1:27", difficulty: 6, chartUrl: '/songs/The_Makings_of_a_Career.json', audioUrl: '/songs/The_Makings_of_a_Career.mp3' },
 ];
 
 export default class Game {
